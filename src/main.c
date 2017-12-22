@@ -9,9 +9,9 @@ int main(void)
 	sotype_init(&sot, SPACE_OBJ_PLAYER);
 	*sotype_icon(&sot) = pixel('X', GREEN);
 	invert_pixel(sotype_icon(&sot));
-	*sotype_friction(&sot) = 0.98;
+	*sotype_friction(&sot) = 0.99;
 	*sotype_acceleration(&sot) = 0.02;
-	*sotype_rotation(&sot) = 0.08;
+	*sotype_rotation(&sot) = 0.18;
 	struct space_obj so;
 	space_obj_init(&so, &sot);
 	space_obj_pos(&so)->y = 50.0;
