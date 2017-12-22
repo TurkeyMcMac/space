@@ -61,9 +61,7 @@ static PIXEL *canvas_get_float(struct canvas *c, COORD p)
 void space_obj_draw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
-	if (at == NULL)
-		return;
-	else
+	if (at)
 		*at = self->type->icon;
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		space_obj_calc_dir(self);
@@ -83,9 +81,7 @@ void space_obj_draw(struct space_obj *self, struct canvas *c)
 void space_obj_undraw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
-	if (at == NULL)
-		return;
-	else
+	if (at)
 		*at = EMPTY_SPACE_ICON;
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		space_obj_calc_dir(self);
