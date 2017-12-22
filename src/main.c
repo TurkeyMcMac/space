@@ -43,7 +43,7 @@ int main(void)
 				space_obj_rright(&so);
 				break;
 			case '\04':
-				goto LOOP_END;
+				goto CLEANUP;
 		}
 		space_obj_update(&so);
 		space_obj_draw(&so, &c);
@@ -53,8 +53,8 @@ int main(void)
 		canvas_unprint(&c, stderr);
 		space_obj_undraw(&so, &c);
 	}
-	LOOP_END:
 
+	CLEANUP:
 	reset_single_key_input(&old_settings);
 }
 
