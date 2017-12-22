@@ -13,6 +13,7 @@ struct space_obj {
 	int health;
 	int lifetime;
 	int ammo, reload_burst;
+	float angle;
 	COORD dir;
 	COORD pos;
 	COORD vel;
@@ -49,8 +50,8 @@ void space_obj_thrust(struct space_obj *self);
 
 #define EMPTY_SPACE_ICON (pixel(' ', WHITE))
 
-void space_obj_draw(const struct space_obj *self, struct canvas *c);
+void space_obj_draw(struct space_obj *self, struct canvas *c);
 
-void space_obj_undraw(const struct space_obj *self, struct canvas *c);
+void space_obj_undraw(struct space_obj *self, struct canvas *c);
 
 #endif

@@ -14,8 +14,9 @@ int main(void)
 	sot.rotation = 0.08;
 	struct space_obj so;
 	so.type = &sot;
+	so.angle = 0.0;
 	so.dir.x = 0.0;
-	so.dir.y = 1.0;
+	so.dir.y = 0.0;
 	so.pos.x = 0.0;
 	so.vel.x = 0.0;
 	so.pos.y = 50.0;
