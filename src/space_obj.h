@@ -13,7 +13,7 @@ struct space_obj {
 	int health;
 	int lifetime;
 	int ammo, reload_burst;
-	float direction;
+	COORD dir;
 	COORD pos;
 	COORD vel;
 };
@@ -44,8 +44,6 @@ void space_obj_update(struct space_obj *self);
 void space_obj_rleft(struct space_obj *self);
 
 void space_obj_rright(struct space_obj *self);
-
-COORD space_obj_direction(const struct space_obj *self);
 
 void space_obj_thrust(struct space_obj *self);
 

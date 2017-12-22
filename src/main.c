@@ -6,6 +6,7 @@
 int main(void)
 {
 	struct space_obj_type sot;
+	sot.flags = SPACE_OBJ_PLAYER;
 	sot.icon = pixel('X', GREEN);
 	invert_pixel(&sot.icon);
 	sot.friction = 0.96;
@@ -13,7 +14,8 @@ int main(void)
 	sot.rotation = 0.05;
 	struct space_obj so;
 	so.type = &sot;
-	so.direction = 0.0;
+	so.dir.x = 0.0;
+	so.dir.y = 1.0;
 	so.pos.x = 0.0;
 	so.vel.x = 0.0;
 	so.pos.y = 50.0;
