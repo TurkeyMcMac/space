@@ -6,7 +6,7 @@
 int main(void)
 {
 	struct space_obj_type sot;
-	*sotype_flags(&sot) = SPACE_OBJ_PLAYER;
+	sotype_init(&sot, SPACE_OBJ_PLAYER);
 	*sotype_icon(&sot) = pixel('X', GREEN);
 	invert_pixel(sotype_icon(&sot));
 	*sotype_friction(&sot) = 0.98;

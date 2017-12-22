@@ -122,10 +122,30 @@ SO_GETTER(COORD, dir);
 SO_GETTER(COORD, pos);
 SO_GETTER(COORD, vel);
 
+#define SPACE_OBJ_PLAYER (1 << 0)
+#define SPACE_OBJ_TRACK (1 << 1)
+#define SPACE_OBJ_SHOOT (1 << 2)
+#define SPACE_OBJ_SOLID (1 << 3)
+#define SPACE_OBJ_EFFECT (1 << 4)
+
+void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
+{
+	sot->flags = flags;
+	sot->icon = pixel('_', WHITE);
+	sot->name = "(none)";
+	sot->health = 0;
+	sot->lifetime = -1;
+	sot->reload = 0;
+	sot->reload_burst = 0;
+	sot->mass = 1.0;
+	sot->friction = 1.0;
+	sot->acceleration = 0.0;
+	sot->rotation = 0.0;
+}
+
 #define SOTYPE_GETTER(type, field) \
 	type *sotype_##field(struct space_obj_type *self) { return &self->field; }
 
-SOTYPE_GETTER(SPACE_OBJ_FLAGS, flags);
 SOTYPE_GETTER(PIXEL, icon);
 SOTYPE_GETTER(const char *, name);
 SOTYPE_GETTER(int, health);

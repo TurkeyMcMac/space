@@ -72,7 +72,7 @@ struct space_obj_type {
 	float rotation;
 };
 
-SPACE_OBJ_FLAGS *sotype_flags(struct space_obj_type *self);
+void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags);
 
 PIXEL *sotype_icon(struct space_obj_type *self);
 
