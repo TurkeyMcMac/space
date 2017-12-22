@@ -61,8 +61,8 @@ void space_obj_draw(const struct space_obj *self, struct canvas *c)
 		*at = self->type->icon;
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		COORD targ = self->dir;
-		targ.x *= 10.0;
-		targ.y *= 10.0;
+		targ.x *= 20.0;
+		targ.y *= 20.0;
 		targ.x += self->pos.x;
 		targ.y += self->pos.y;
 		at = canvas_get_float(c, targ);
@@ -82,8 +82,8 @@ void space_obj_undraw(const struct space_obj *self, struct canvas *c)
 		*at = EMPTY_SPACE_ICON;
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		COORD targ = self->dir;
-		targ.x *= 10.0;
-		targ.y *= 10.0;
+		targ.x *= 20.0;
+		targ.y *= 20.0;
 		targ.x += self->pos.x;
 		targ.y += self->pos.y;
 		at = canvas_get_float(c, targ);

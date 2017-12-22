@@ -9,9 +9,9 @@ int main(void)
 	sot.flags = SPACE_OBJ_PLAYER;
 	sot.icon = pixel('X', GREEN);
 	invert_pixel(&sot.icon);
-	sot.friction = 0.96;
+	sot.friction = 0.98;
 	sot.acceleration = 0.02;
-	sot.rotation = 0.05;
+	sot.rotation = 0.08;
 	struct space_obj so;
 	so.type = &sot;
 	so.dir.x = 0.0;
