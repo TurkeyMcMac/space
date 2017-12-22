@@ -4,6 +4,19 @@
 
 #include <math.h>
 
+void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
+{
+	so->type = type;
+	so->health = type->health;
+	so->lifetime = type->lifetime;
+	so->ammo = type->reload;
+	so->reload_burst = 0;
+	so->angle = 0.0;
+	so->dir = (COORD) { 0.0, 0.0 };
+	so->pos = (COORD) { 0.0, 0.0 };
+	so->vel = (COORD) { 0.0, 0.0 };
+}
+
 void space_obj_update(struct space_obj *self)
 {
 	self->pos.x += self->vel.x;
@@ -97,6 +110,17 @@ void space_obj_undraw(struct space_obj *self, struct canvas *c)
 			invert_pixel(at);
 	}
 }
+#define SO_GETTER(type, field) \
+	type *space_obj_##field(struct space_obj *self) { return &self->field; }
+
+SO_GETTER(int, health);
+SO_GETTER(int, lifetime);
+SO_GETTER(int, ammo);
+SO_GETTER(int, reload_burst);
+SO_GETTER(float, angle);
+SO_GETTER(COORD, dir);
+SO_GETTER(COORD, pos);
+SO_GETTER(COORD, vel);
 
 #define SOTYPE_GETTER(type, field) \
 	type *sotype_##field(struct space_obj_type *self) { return &self->field; }

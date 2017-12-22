@@ -13,14 +13,8 @@ int main(void)
 	*sotype_acceleration(&sot) = 0.02;
 	*sotype_rotation(&sot) = 0.08;
 	struct space_obj so;
-	so.type = &sot;
-	so.angle = 0.0;
-	so.dir.x = 0.0;
-	so.dir.y = 0.0;
-	so.pos.x = 0.0;
-	so.vel.x = 0.0;
-	so.pos.y = 50.0;
-	so.vel.y = 0.0;
+	space_obj_init(&so, &sot);
+	space_obj_pos(&so)->y = 50.0;
 	struct canvas c;
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
 

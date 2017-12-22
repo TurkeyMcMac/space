@@ -19,6 +19,8 @@ struct space_obj {
 	COORD vel;
 };
 
+void space_obj_init(struct space_obj *so, const struct space_obj_type *type);
+
 void space_obj_update(struct space_obj *self);
 
 void space_obj_rleft(struct space_obj *self);
@@ -32,6 +34,22 @@ void space_obj_thrust(struct space_obj *self);
 void space_obj_draw(struct space_obj *self, struct canvas *c);
 
 void space_obj_undraw(struct space_obj *self, struct canvas *c);
+
+int *space_obj_health(struct space_obj *self);
+
+int *space_obj_lifetime(struct space_obj *self);
+
+int *space_obj_ammo(struct space_obj *self);
+
+int *space_obj_reload_burst(struct space_obj *self);
+
+float *space_obj_angle(struct space_obj *self);
+
+COORD *space_obj_dir(struct space_obj *self);
+
+COORD *space_obj_pos(struct space_obj *self);
+
+COORD *space_obj_vel(struct space_obj *self);
 
 #define SPACE_OBJ_PLAYER (1 << 0)
 #define SPACE_OBJ_TRACK (1 << 1)
