@@ -19,6 +19,20 @@ struct space_obj {
 	COORD vel;
 };
 
+void space_obj_update(struct space_obj *self);
+
+void space_obj_rleft(struct space_obj *self);
+
+void space_obj_rright(struct space_obj *self);
+
+void space_obj_thrust(struct space_obj *self);
+
+#define EMPTY_SPACE_ICON (pixel(' ', WHITE))
+
+void space_obj_draw(struct space_obj *self, struct canvas *c);
+
+void space_obj_undraw(struct space_obj *self, struct canvas *c);
+
 #define SPACE_OBJ_PLAYER (1 << 0)
 #define SPACE_OBJ_TRACK (1 << 1)
 #define SPACE_OBJ_SHOOT (1 << 2)
@@ -40,18 +54,26 @@ struct space_obj_type {
 	float rotation;
 };
 
-void space_obj_update(struct space_obj *self);
+SPACE_OBJ_FLAGS *sotype_flags(struct space_obj_type *self);
 
-void space_obj_rleft(struct space_obj *self);
+PIXEL *sotype_icon(struct space_obj_type *self);
 
-void space_obj_rright(struct space_obj *self);
+const char **sotype_name(struct space_obj_type *self);
 
-void space_obj_thrust(struct space_obj *self);
+int *sotype_health(struct space_obj_type *self);
 
-#define EMPTY_SPACE_ICON (pixel(' ', WHITE))
+int *sotype_lifetime(struct space_obj_type *self);
 
-void space_obj_draw(struct space_obj *self, struct canvas *c);
+int *sotype_reload(struct space_obj_type *self);
 
-void space_obj_undraw(struct space_obj *self, struct canvas *c);
+int *sotype_reload_burst(struct space_obj_type *self);
+
+float *sotype_mass(struct space_obj_type *self);
+
+float *sotype_friction(struct space_obj_type *self);
+
+float *sotype_acceleration(struct space_obj_type *self);
+
+float *sotype_rotation(struct space_obj_type *self);
 
 #endif

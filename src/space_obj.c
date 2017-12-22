@@ -97,3 +97,18 @@ void space_obj_undraw(struct space_obj *self, struct canvas *c)
 			invert_pixel(at);
 	}
 }
+
+#define SOTYPE_GETTER(type, field) \
+	type *sotype_##field(struct space_obj_type *self) { return &self->field; }
+
+SOTYPE_GETTER(SPACE_OBJ_FLAGS, flags);
+SOTYPE_GETTER(PIXEL, icon);
+SOTYPE_GETTER(const char *, name);
+SOTYPE_GETTER(int, health);
+SOTYPE_GETTER(int, lifetime);
+SOTYPE_GETTER(int, reload);
+SOTYPE_GETTER(int, reload_burst);
+SOTYPE_GETTER(float, mass);
+SOTYPE_GETTER(float, friction);
+SOTYPE_GETTER(float, acceleration);
+SOTYPE_GETTER(float, rotation);

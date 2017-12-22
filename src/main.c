@@ -6,12 +6,12 @@
 int main(void)
 {
 	struct space_obj_type sot;
-	sot.flags = SPACE_OBJ_PLAYER;
-	sot.icon = pixel('X', GREEN);
-	invert_pixel(&sot.icon);
-	sot.friction = 0.98;
-	sot.acceleration = 0.02;
-	sot.rotation = 0.08;
+	*sotype_flags(&sot) = SPACE_OBJ_PLAYER;
+	*sotype_icon(&sot) = pixel('X', GREEN);
+	invert_pixel(sotype_icon(&sot));
+	*sotype_friction(&sot) = 0.98;
+	*sotype_acceleration(&sot) = 0.02;
+	*sotype_rotation(&sot) = 0.08;
 	struct space_obj so;
 	so.type = &sot;
 	so.angle = 0.0;
