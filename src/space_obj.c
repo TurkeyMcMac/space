@@ -12,9 +12,14 @@ void space_obj_update(struct space_obj *self)
 	self->vel.y *= self->type->friction;
 }
 
-void space_obj_rot(struct space_obj *self, float rotation)
+void space_obj_rright(struct space_obj *self)
 {
-	self->direction += rotation;
+	self->direction += self->type->rotation;
+}
+
+void space_obj_rleft(struct space_obj *self)
+{
+	self->direction -= self->type->rotation;
 }
 
 COORD space_obj_direction(const struct space_obj *self)

@@ -36,11 +36,14 @@ struct space_obj_type {
 	float mass;
        	float friction;
 	float acceleration;
+	float rotation;
 };
 
 void space_obj_update(struct space_obj *self);
 
-void space_obj_rot(struct space_obj *self, float rotation);
+void space_obj_rleft(struct space_obj *self);
+
+void space_obj_rright(struct space_obj *self);
 
 COORD space_obj_direction(const struct space_obj *self);
 
