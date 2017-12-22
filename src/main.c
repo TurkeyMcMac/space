@@ -34,13 +34,12 @@ int main(void)
 	char keybuf[20];
 	char lk;
 	while (1) {
-//		space_obj_undraw(&so, &c);
 		lk = last_key(keybuf, 20);
 		switch (lk) {
-/*			case 'A':
+			case 'A':
 				space_obj_thrust(&so);
 				break;
-*/			case 'D':
+			case 'D':
 				space_obj_rleft(&so);
 				break;
 			case 'C':
@@ -49,12 +48,13 @@ int main(void)
 			case '\04':
 				goto LOOP_END;
 		}
-		space_obj_thrust(&so);
 		space_obj_update(&so);
 		space_obj_draw(&so, &c);
 		canvas_print(&c, stderr);
 		fflush(stderr);
 		tick(&t);
+		canvas_unprint(&c, stderr);
+		space_obj_undraw(&so, &c);
 	}
 	LOOP_END:
 

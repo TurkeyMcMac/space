@@ -40,4 +40,6 @@ PIXEL *canvas_get(struct canvas *self, size_t x, size_t y);
 
 int canvas_print(const struct canvas *self, FILE *f);
 
+int canvas_unprint(const struct canvas *self, FILE *f);
+
 #endif

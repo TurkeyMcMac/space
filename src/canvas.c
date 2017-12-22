@@ -74,3 +74,8 @@ int canvas_print(const struct canvas *self, FILE *f)
 	}
 	return total_write;
 }
+
+int canvas_unprint(const struct canvas *self, FILE *f)
+{
+	fprintf(stderr, "\x1B[%luA", self->height);
+}
