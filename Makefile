@@ -17,3 +17,4 @@ a.out: .objects $(object-files) .objects/main.o
 
 clean:
 	rm -rf .objects
+	rm a.out
