@@ -1,7 +1,7 @@
-#include "space_obj.h"
 #include "canvas.h"
-
-#include <unistd.h>
+#include "keys.h"
+#include "space_obj.h"
+#include "ticker.h"
 
 int main(void)
 {
@@ -20,6 +20,13 @@ int main(void)
 	so.vel.y = 0.0;
 	struct canvas c;
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
+
+	struct ticker t;
+	ticker_init(&t, CLOCK_REALTIME, 0, 1000000000 / 15);
+
+	char buf[BUFSIZ];
+	setbuf(stderr, buf);
+
 	while (1) {
 		space_obj_undraw(&so, &c);
 		if (so.pos.y > 50.0)
@@ -29,8 +36,9 @@ int main(void)
 		space_obj_thrust(&so);
 		space_obj_update(&so);
 		space_obj_draw(&so, &c);
-		canvas_print(&c, stdout);
-		usleep(16666);
+		canvas_print(&c, stderr);
+		fflush(stderr);
+		tick(&t);
 	}
 }
 
