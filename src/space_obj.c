@@ -103,7 +103,7 @@ void space_obj_draw(struct space_obj *self, struct canvas *c)
 		if (at == NULL)
 			return;
 		else
-			invert_pixel(at);
+			at->inverted = 1;
 	}
 }
 
@@ -123,7 +123,7 @@ void space_obj_undraw(struct space_obj *self, struct canvas *c)
 		if (at == NULL)
 			return;
 		else
-			invert_pixel(at);
+			at->inverted = 0;
 	}
 }
 #define SO_GETTER(type, field) \

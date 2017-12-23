@@ -8,7 +8,7 @@ int main(void)
 	struct space_obj_type sot;
 	sotype_init(&sot, SPACE_OBJ_PLAYER);
 	*sotype_icon(&sot) = pixel('X', GREEN);
-	invert_pixel(sotype_icon(&sot));
+	sotype_icon(&sot)->inverted = 1;
 	*sotype_reload(&sot) = 10;
 	*sotype_reload_burst(&sot) = 100;
 	*sotype_ammo(&sot) = 10;

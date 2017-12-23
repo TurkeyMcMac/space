@@ -23,8 +23,6 @@ typedef struct {
 
 PIXEL pixel(char ch, char color);
 
-void invert_pixel(PIXEL *p);
-
 int print_pixel(PIXEL p, FILE *f);
 
 struct canvas {

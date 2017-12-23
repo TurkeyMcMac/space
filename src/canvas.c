@@ -14,11 +14,6 @@ PIXEL pixel(char ch, char color)
 	return p;
 }
 
-void invert_pixel(PIXEL *p)
-{
-	p->inverted = ~p->inverted;
-}
-
 int print_pixel(PIXEL p, FILE *f)
 {
 	if (p.color == WHITE) {
