@@ -12,7 +12,7 @@ struct space_obj {
 	const struct space_obj_type *type;
 	int health;
 	int lifetime;
-	int ammo, reload_burst;
+	short reload, ammo;
 	float angle;
 	COORD dir;
 	COORD pos;
@@ -56,9 +56,11 @@ int *space_obj_health(struct space_obj *self);
 
 int *space_obj_lifetime(struct space_obj *self);
 
-int *space_obj_ammo(struct space_obj *self);
+short *space_obj_ammo(struct space_obj *self);
 
-int *space_obj_reload_burst(struct space_obj *self);
+short *space_obj_reload(struct space_obj *self);
+
+short *space_obj_ammo(struct space_obj *self);
 
 float *space_obj_angle(struct space_obj *self);
 
@@ -82,7 +84,7 @@ struct space_obj_type {
 	const char *name;
 	int health;
 	int lifetime;
-	int reload, reload_burst;
+	short reload, reload_burst, ammo;
 	float mass;
        	float friction;
 	float acceleration;
@@ -99,9 +101,11 @@ int *sotype_health(struct space_obj_type *self);
 
 int *sotype_lifetime(struct space_obj_type *self);
 
-int *sotype_reload(struct space_obj_type *self);
+short *sotype_reload(struct space_obj_type *self);
 
-int *sotype_reload_burst(struct space_obj_type *self);
+short *sotype_reload_burst(struct space_obj_type *self);
+
+short *sotype_ammo(struct space_obj_type *self);
 
 float *sotype_mass(struct space_obj_type *self);
 

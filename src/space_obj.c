@@ -5,13 +5,19 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define SPACE_OBJ_PLAYER (1 << 0)
+#define SPACE_OBJ_TRACK (1 << 1)
+#define SPACE_OBJ_SHOOT (1 << 2)
+#define SPACE_OBJ_SOLID (1 << 3)
+#define SPACE_OBJ_EFFECT (1 << 4)
+
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 {
 	so->type = type;
 	so->health = type->health;
 	so->lifetime = type->lifetime;
 	so->ammo = type->reload;
-	so->reload_burst = 0;
+	so->reload = 0;
 	so->angle = 0.0;
 	so->dir = (COORD) { 0.0, 0.0 };
 	so->pos = (COORD) { 0.0, 0.0 };
@@ -24,6 +30,14 @@ int space_obj_update(struct space_obj *self)
 	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
+	if (self->type->flags & (SPACE_OBJ_PLAYER | SPACE_OBJ_SHOOT)) {
+		if (self->reload > 0)
+			--self->reload;
+		if (self->ammo == 0) {
+			self->reload = self->type->reload_burst;
+			self->ammo = self->type->ammo;
+		}
+	}
 	return NOTHING;
 }
 
@@ -117,18 +131,12 @@ void space_obj_undraw(struct space_obj *self, struct canvas *c)
 
 SO_GETTER(int, health);
 SO_GETTER(int, lifetime);
-SO_GETTER(int, ammo);
-SO_GETTER(int, reload_burst);
+SO_GETTER(short, reload);
+SO_GETTER(short, ammo);
 SO_GETTER(float, angle);
 SO_GETTER(COORD, dir);
 SO_GETTER(COORD, pos);
 SO_GETTER(COORD, vel);
-
-#define SPACE_OBJ_PLAYER (1 << 0)
-#define SPACE_OBJ_TRACK (1 << 1)
-#define SPACE_OBJ_SHOOT (1 << 2)
-#define SPACE_OBJ_SOLID (1 << 3)
-#define SPACE_OBJ_EFFECT (1 << 4)
 
 void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 {
@@ -137,6 +145,7 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 	sot->name = "(none)";
 	sot->health = 0;
 	sot->lifetime = -1;
+	sot->ammo = 0;
 	sot->reload = 0;
 	sot->reload_burst = 0;
 	sot->mass = 1.0;
@@ -152,8 +161,9 @@ SOTYPE_GETTER(PIXEL, icon);
 SOTYPE_GETTER(const char *, name);
 SOTYPE_GETTER(int, health);
 SOTYPE_GETTER(int, lifetime);
-SOTYPE_GETTER(int, reload);
-SOTYPE_GETTER(int, reload_burst);
+SOTYPE_GETTER(short, reload);
+SOTYPE_GETTER(short, reload_burst);
+SOTYPE_GETTER(short, ammo);
 SOTYPE_GETTER(float, mass);
 SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
@@ -167,7 +177,8 @@ struct space_obj_node *space_obj_shoot(struct space_obj *self)
 		*sotype_icon(&bullet_ty) = pixel('`', RED);
 		*sotype_name(&bullet_ty) = "bullet";
 	}
-	if (self->ammo) {
+	if (self->reload == 0) {
+		self->reload = self->type->reload;
 		--self->ammo;
 		struct space_obj_node *b = malloc(sizeof(struct space_obj_node));
 		space_obj_init(&b->so, &bullet_ty);
@@ -175,8 +186,9 @@ struct space_obj_node *space_obj_shoot(struct space_obj *self)
 		space_obj_calc_dir(self);
 		b->so.pos.x += self->dir.x * 2;
 		b->so.pos.y += self->dir.y * 2;
-		b->so.vel.x = self->dir.x * 2;
-		b->so.vel.y = self->dir.y * 2;
+		b->so.vel = self->vel;
+		b->so.vel.x += self->dir.x * 2;
+		b->so.vel.y += self->dir.y * 2;
 		return b;
 	} else
 		return NULL;
