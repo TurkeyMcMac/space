@@ -11,6 +11,11 @@
 #define SPACE_OBJ_SOLID (1 << 3)
 #define SPACE_OBJ_EFFECT (1 << 4)
 
+struct simulated {
+	enum sim_action action;
+	struct space_obj_node *insert;
+};
+
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 {
 	so->type = type;
@@ -24,7 +29,7 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->vel = (COORD) { 0.0, 0.0 };
 }
 
-int space_obj_update(struct space_obj *self)
+static int space_obj_update(struct space_obj *self)
 {
 	self->pos.x += self->vel.x;
 	self->pos.y += self->vel.y;
@@ -50,7 +55,7 @@ static void space_obj_rotate(struct space_obj *self, float angle)
 	self->dir = (COORD) { 0.0, 0.0 };
 }
 
-void space_obj_calc_dir(struct space_obj *self)
+static void space_obj_calc_dir(struct space_obj *self)
 {
 	if (self->dir.x == 0.0 && self->dir.y == 0.0) {
 		self->dir.x = cosf(self->angle);
@@ -58,17 +63,17 @@ void space_obj_calc_dir(struct space_obj *self)
 	}
 }
 
-void space_obj_rright(struct space_obj *self)
+static void space_obj_rright(struct space_obj *self)
 {
 	space_obj_rotate(self, self->type->rotation);
 }
 
-void space_obj_rleft(struct space_obj *self)
+static void space_obj_rleft(struct space_obj *self)
 {
 	space_obj_rotate(self, -self->type->rotation);
 }
 
-void space_obj_thrust(struct space_obj *self)
+static void space_obj_thrust(struct space_obj *self)
 {
 	space_obj_calc_dir(self);
 	COORD t = self->dir;
@@ -90,7 +95,7 @@ static PIXEL *canvas_get_float(struct canvas *c, COORD p)
 	return canvas_get(c, x, y);
 }
 
-void space_obj_draw(struct space_obj *self, struct canvas *c)
+static void space_obj_draw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
 	if (at)
@@ -110,7 +115,7 @@ void space_obj_draw(struct space_obj *self, struct canvas *c)
 	}
 }
 
-void space_obj_undraw(struct space_obj *self, struct canvas *c)
+static void space_obj_undraw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
 	if (at)
@@ -172,7 +177,7 @@ SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
 SOTYPE_GETTER(float, rotation);
 
-struct space_obj_node *space_obj_shoot(struct space_obj *self)
+static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 {
 	static struct space_obj_type bullet_ty = { .name = NULL };
 	if (bullet_ty.name == NULL) {
@@ -199,7 +204,7 @@ struct space_obj_node *space_obj_shoot(struct space_obj *self)
 
 }
 
-void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments */
+static void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments */
 		struct space_obj_node *others,
 		char last_key,
 		struct simulated *result,
@@ -285,4 +290,3 @@ int space_objs_simulate(struct space_obj_node *list, char last_key, struct canva
 	}
 	return 1;
 }
-
