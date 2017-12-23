@@ -42,7 +42,6 @@ int main(void)
 		lk = last_key(keybuf, 5);
 	}
 
-	CLEANUP:
 	reset_single_key_input(&old_settings);
 }
 
