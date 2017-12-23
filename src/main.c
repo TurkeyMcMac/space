@@ -9,12 +9,14 @@ int main(void)
 	sotype_init(&sot, SPACE_OBJ_PLAYER);
 	*sotype_icon(&sot) = pixel('X', GREEN);
 	invert_pixel(sotype_icon(&sot));
+	*sotype_reload(&sot) = 99;
 	*sotype_friction(&sot) = 0.99;
 	*sotype_acceleration(&sot) = 0.03;
 	*sotype_rotation(&sot) = 0.05;
-	struct space_obj so;
-	space_obj_init(&so, &sot);
-	space_obj_pos(&so)->y = 50.0;
+	struct space_obj_node *sos = calloc(1, sizeof(struct space_obj_node));
+	struct space_obj *so = &sos->so;
+	space_obj_init(so, &sot);
+	space_obj_pos(so)->y = 50.0;
 	struct canvas c;
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
 
@@ -28,38 +30,14 @@ int main(void)
 
 	set_single_key_input(&old_settings);
 
-	char keybuf[20];
-	char lk;
-	while (1) {
-		lk = last_key(keybuf, 20);
-		switch (lk) {
-			case 'w':
-				space_obj_thrust(&so);
-				break;
-			case 'a':
-				space_obj_rleft(&so);
-				break;
-			case 'd':
-				space_obj_rright(&so);
-				break;
-			case 'q':
-				space_obj_rleft(&so);
-				space_obj_thrust(&so);
-				break;
-			case 'e':
-				space_obj_rright(&so);
-				space_obj_thrust(&so);
-				break;
-			case '\04':
-				goto CLEANUP;
-		}
-		space_obj_update(&so);
-		space_obj_draw(&so, &c);
+	char keybuf[5];
+	char lk = last_key(keybuf, 5);
+	while (space_objs_simulate(sos, lk, &c)) {
 		canvas_print(&c, stderr);
 		fflush(stderr);
 		tick(&t);
 		canvas_unprint(&c, stderr);
-		space_obj_undraw(&so, &c);
+		lk = last_key(keybuf, 5);
 	}
 
 	CLEANUP:

@@ -3,6 +3,7 @@
 #include "canvas.h"
 
 #include <math.h>
+#include <stdlib.h>
 
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 {
@@ -17,12 +18,13 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->vel = (COORD) { 0.0, 0.0 };
 }
 
-void space_obj_update(struct space_obj *self)
+int space_obj_update(struct space_obj *self)
 {
 	self->pos.x += self->vel.x;
 	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
+	return NOTHING;
 }
 
 static void space_obj_rotate(struct space_obj *self, float angle)
@@ -156,3 +158,87 @@ SOTYPE_GETTER(float, mass);
 SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
 SOTYPE_GETTER(float, rotation);
+
+struct space_obj_node *space_obj_shoot(struct space_obj *self)
+{
+	static struct space_obj_type bullet_ty = { .name = NULL };
+	if (bullet_ty.name == NULL) {
+		sotype_init(&bullet_ty, 0);
+		*sotype_icon(&bullet_ty) = pixel('`', RED);
+		*sotype_name(&bullet_ty) = "bullet";
+	}
+	if (self->ammo) {
+		--self->ammo;
+		struct space_obj_node *b = malloc(sizeof(struct space_obj_node));
+		space_obj_init(&b->so, &bullet_ty);
+		b->so.pos = self->pos;
+		space_obj_calc_dir(self);
+		b->so.pos.x += self->dir.x * 2;
+		b->so.pos.y += self->dir.y * 2;
+		b->so.vel.x = self->dir.x * 2;
+		b->so.vel.y = self->dir.y * 2;
+		return b;
+	} else
+		return NULL;
+
+}
+
+void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments */
+		struct space_obj_node *others,
+		char last_key,
+		struct simulated *result,
+		struct canvas *c)
+{
+	if (self->type->flags & SPACE_OBJ_PLAYER) {
+		switch (last_key) {
+			case 'w':
+				space_obj_thrust(self);
+				break;
+			case 'a':
+				space_obj_rleft(self);
+				break;
+			case 'd':
+				space_obj_rright(self);
+				break;
+			case 'q':
+				space_obj_rleft(self);
+				space_obj_thrust(self);
+				break;
+			case 'e':
+				space_obj_rright(self);
+				space_obj_thrust(self);
+				break;
+			case ' ':
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
+			case '\04':
+				result->action = STOP_GAME;
+				return;
+		}
+	}
+	result->insert = NULL;
+	UPDATE:
+	space_obj_undraw(self, c);
+	result->action = space_obj_update(self);
+	space_obj_draw(self, c);
+}
+
+int space_objs_simulate(struct space_obj_node *list, char last_key, struct canvas *c)
+{
+	struct space_obj_node *node;
+	for (node = list; node != NULL; node = node->next) {
+		struct simulated simmed;
+		space_obj_simulate(&node->so, list, last_key, &simmed, c);
+		switch (simmed.action) {
+			case STOP_GAME:
+				return 0;
+			/* TODO: handle the rest */
+		}
+		if (simmed.insert) {
+			simmed.insert->next = node->next;
+			node->next = simmed.insert;
+		}
+	}
+	return 1;
+}
+

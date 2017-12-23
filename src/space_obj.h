@@ -21,7 +21,24 @@ struct space_obj {
 
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type);
 
-void space_obj_update(struct space_obj *self);
+int space_obj_update(struct space_obj *self);
+
+enum sim_action {
+	NOTHING,
+	REM_SELF,
+	STOP_GAME,
+};
+
+struct simulated {
+	enum sim_action action;
+	struct space_obj_node *insert;
+};
+
+void space_obj_simulate(struct space_obj *self,
+		struct space_obj_node *others,
+		char last_key,
+		struct simulated *result,
+		struct canvas *c);
 
 void space_obj_rleft(struct space_obj *self);
 
@@ -93,5 +110,13 @@ float *sotype_friction(struct space_obj_type *self);
 float *sotype_acceleration(struct space_obj_type *self);
 
 float *sotype_rotation(struct space_obj_type *self);
+
+struct space_obj_node {
+	struct space_obj_node *next;
+	size_t rc;
+	struct space_obj so;
+};
+
+int space_objs_simulate(struct space_obj_node *list, char last_key, struct canvas *c);
 
 #endif
