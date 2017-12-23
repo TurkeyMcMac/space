@@ -3,6 +3,8 @@
 #include "space_obj.h"
 #include "ticker.h"
 
+#include <stdlib.h>
+
 int main(void)
 {
 	struct space_obj_type sot;
