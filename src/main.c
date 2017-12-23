@@ -10,8 +10,8 @@ int main(void)
 	*sotype_icon(&sot) = pixel('X', GREEN);
 	invert_pixel(sotype_icon(&sot));
 	*sotype_friction(&sot) = 0.99;
-	*sotype_acceleration(&sot) = 0.02;
-	*sotype_rotation(&sot) = 0.18;
+	*sotype_acceleration(&sot) = 0.03;
+	*sotype_rotation(&sot) = 0.05;
 	struct space_obj so;
 	space_obj_init(&so, &sot);
 	space_obj_pos(&so)->y = 50.0;
@@ -33,14 +33,22 @@ int main(void)
 	while (1) {
 		lk = last_key(keybuf, 20);
 		switch (lk) {
-			case 'A':
+			case 'w':
 				space_obj_thrust(&so);
 				break;
-			case 'D':
+			case 'a':
 				space_obj_rleft(&so);
 				break;
-			case 'C':
+			case 'd':
 				space_obj_rright(&so);
+				break;
+			case 'q':
+				space_obj_rleft(&so);
+				space_obj_thrust(&so);
+				break;
+			case 'e':
+				space_obj_rright(&so);
+				space_obj_thrust(&so);
 				break;
 			case '\04':
 				goto CLEANUP;
