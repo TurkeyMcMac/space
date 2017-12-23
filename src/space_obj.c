@@ -201,6 +201,7 @@ void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments *
 		struct simulated *result,
 		struct canvas *c)
 {
+	space_obj_undraw(self, c);
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		switch (last_key) {
 			case 'w':
@@ -230,7 +231,6 @@ void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments *
 	}
 	result->insert = NULL;
 	UPDATE:
-	space_obj_undraw(self, c);
 	result->action = space_obj_update(self);
 	space_obj_draw(self, c);
 }
