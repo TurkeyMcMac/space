@@ -11,6 +11,8 @@ int main(void)
 	sotype_init(&sot, SPACE_OBJ_PLAYER);
 	*sotype_icon(&sot) = pixel('X', GREEN);
 	sotype_icon(&sot)->inverted = 1;
+	*sotype_lifetime(&sot) = -1;
+	*sotype_health(&sot) = 100;
 	*sotype_reload(&sot) = 10;
 	*sotype_reload_burst(&sot) = 100;
 	*sotype_ammo(&sot) = 10;

@@ -30,6 +30,9 @@ int space_obj_update(struct space_obj *self)
 	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
+	if (self->lifetime == 0 || self->health <= 0)
+		return REM_SELF;
+	--self->lifetime;
 	if (self->type->flags & (SPACE_OBJ_PLAYER | SPACE_OBJ_SHOOT)) {
 		if (self->reload > 0)
 			--self->reload;
@@ -143,7 +146,7 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 	sot->flags = flags;
 	sot->icon = pixel('_', WHITE);
 	sot->name = "(none)";
-	sot->health = 0;
+	sot->health = 1;
 	sot->lifetime = -1;
 	sot->ammo = 0;
 	sot->reload = 0;
@@ -176,6 +179,7 @@ struct space_obj_node *space_obj_shoot(struct space_obj *self)
 		sotype_init(&bullet_ty, 0);
 		*sotype_icon(&bullet_ty) = pixel('`', RED);
 		*sotype_name(&bullet_ty) = "bullet";
+		*sotype_lifetime(&bullet_ty) = 60;
 	}
 	if (self->reload == 0) {
 		self->reload = self->type->reload;
@@ -254,19 +258,25 @@ void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments *
 	result->insert = NULL;
 	UPDATE:
 	result->action = space_obj_update(self);
-	space_obj_draw(self, c);
+	if (result->action != REM_SELF)
+		space_obj_draw(self, c);
 }
 
 int space_objs_simulate(struct space_obj_node *list, char last_key, struct canvas *c)
 {
-	struct space_obj_node *node;
-	for (node = list; node != NULL; node = node->next) {
+	struct space_obj_node *node, *last_node;
+	for (node = list; node != NULL; last_node = node, node = node->next) {
 		struct simulated simmed;
 		space_obj_simulate(&node->so, list, last_key, &simmed, c);
 		switch (simmed.action) {
 			case STOP_GAME:
 				return 0;
-			/* TODO: handle the rest */
+			case REM_SELF: /* The first item (the player) will never be removed, so
+					  that case need not be handled. */
+				last_node->next = node->next;
+				free(node);
+				node = last_node;
+				break;
 		}
 		if (simmed.insert) {
 			simmed.insert->next = node->next;
