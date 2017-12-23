@@ -221,6 +221,28 @@ void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments *
 				space_obj_rright(self);
 				space_obj_thrust(self);
 				break;
+			case 'W':
+				space_obj_thrust(self);
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
+			case 'A':
+				space_obj_rleft(self);
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
+			case 'D':
+				space_obj_rright(self);
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
+			case 'Q':
+				space_obj_rleft(self);
+				space_obj_thrust(self);
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
+			case 'E':
+				space_obj_rright(self);
+				space_obj_thrust(self);
+				result->insert = space_obj_shoot(self);
+				goto UPDATE;
 			case ' ':
 				result->insert = space_obj_shoot(self);
 				goto UPDATE;
