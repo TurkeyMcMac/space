@@ -10,6 +10,7 @@ typedef struct {
 
 struct space_obj {
 	const struct space_obj_type *type;
+	struct space_obj_node *target;
 	int health;
 	int lifetime;
 	short reload, ammo;

@@ -19,6 +19,7 @@ struct simulated {
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 {
 	so->type = type;
+	so->target = NULL;
 	so->health = type->health;
 	so->lifetime = type->lifetime;
 	so->ammo = type->reload;
@@ -204,6 +205,25 @@ static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 
 }
 
+#define NODE_UNLINKED ((struct space_obj_node *)~0)
+
+static void sonode_drop(struct space_obj_node *self)
+{
+	if (--self->rc == 0 && self->next == NODE_UNLINKED)
+		free(self);
+		
+}
+
+static struct space_obj *sonode_get(struct space_obj_node *self)
+{
+	if (self->next == NODE_UNLINKED) {
+		if (--self->rc == 0)
+			free(self);
+		return NULL;
+	} else
+		return &self->so;
+}
+
 static void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments */
 		struct space_obj_node *others,
 		char last_key,
@@ -267,6 +287,14 @@ static void space_obj_simulate(struct space_obj *self, /* TODO: Remove some argu
 		space_obj_draw(self, c);
 }
 
+static void sonode_unlink(struct space_obj_node *self)
+{
+	if (self->rc == 0)
+		free(self);
+	else
+		self->next = NODE_UNLINKED;
+}
+
 int space_objs_simulate(struct space_obj_node *list, char last_key, struct canvas *c)
 {
 	struct space_obj_node *node, *last_node;
@@ -279,7 +307,7 @@ int space_objs_simulate(struct space_obj_node *list, char last_key, struct canva
 			case REM_SELF: /* The first item (the player) will never be removed, so
 					  that case need not be handled. */
 				last_node->next = node->next;
-				free(node);
+				sonode_unlink(node);
 				node = last_node;
 				break;
 		}
