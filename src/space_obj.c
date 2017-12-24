@@ -37,7 +37,7 @@ static int space_obj_update(struct space_obj *self)
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
 	if (self->lifetime == 0 || self->health <= 0)
-		return REM_SELF;
+		return (self->type->flags & SPACE_OBJ_PLAYER) ? STOP_GAME : REM_SELF;
 	--self->lifetime;
 	if (self->type->flags & (SPACE_OBJ_PLAYER | SPACE_OBJ_SHOOT)) {
 		if (self->reload > 0)
@@ -224,13 +224,10 @@ static struct space_obj *sonode_get(struct space_obj_node *self)
 		return &self->so;
 }
 
-static void space_obj_simulate(struct space_obj *self, /* TODO: Remove some arguments */
+static struct space_obj_node *space_obj_react(struct space_obj *self,
 		struct space_obj_node *others,
-		char last_key,
-		struct simulated *result,
-		struct canvas *c)
+		char last_key)
 {
-	space_obj_undraw(self, c);
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		switch (last_key) {
 			case 'w':
@@ -252,39 +249,29 @@ static void space_obj_simulate(struct space_obj *self, /* TODO: Remove some argu
 				break;
 			case 'W':
 				space_obj_thrust(self);
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case 'A':
 				space_obj_rleft(self);
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case 'D':
 				space_obj_rright(self);
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case 'Q':
 				space_obj_rleft(self);
 				space_obj_thrust(self);
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case 'E':
 				space_obj_rright(self);
 				space_obj_thrust(self);
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case ' ':
-				result->insert = space_obj_shoot(self);
-				goto UPDATE;
+				return space_obj_shoot(self);
 			case '\04':
-				result->action = STOP_GAME;
-				return;
+				self->health = 0;
+				break;
 		}
 	}
-	result->insert = NULL;
-	UPDATE:
-	result->action = space_obj_update(self);
-	if (result->action != REM_SELF)
-		space_obj_draw(self, c);
+	return NULL;
 }
 
 static void sonode_unlink(struct space_obj_node *self)
@@ -299,21 +286,25 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 {
 	struct space_obj_node *node, *last_node;
 	for (node = list; node != NULL; last_node = node, node = node->next) {
-		struct simulated simmed;
-		space_obj_simulate(&node->so, list, last_key, &simmed, c);
-		switch (simmed.action) {
-			case STOP_GAME:
-				return 0;
+		space_obj_undraw(&node->so, c);
+		struct space_obj_node *insert = space_obj_react(&node->so, list, last_key);
+		switch (space_obj_update(&node->so)) {
+			case NOTHING:
+				space_obj_draw(&node->so, c);
+				break;
 			case REM_SELF: /* The first item (the player) will never be removed, so
 					  that case need not be handled. */
 				last_node->next = node->next;
 				sonode_unlink(node);
 				node = last_node;
 				break;
+			case STOP_GAME:
+				space_obj_draw(&node->so, c);
+				return 0;
 		}
-		if (simmed.insert) {
-			simmed.insert->next = node->next;
-			node->next = simmed.insert;
+		if (insert) {
+			insert->next = node->next;
+			node->next = insert;
 		}
 	}
 	return 1;
