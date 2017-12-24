@@ -62,6 +62,17 @@ COORD *space_obj_vel(struct space_obj *self);
 
 typedef int SPACE_OBJ_FLAGS;
 
+struct projectile {
+	const struct space_obj_type *type;
+	float distance;
+	float velocity;
+};
+
+void projectile_init(struct projectile *p,
+		const struct space_obj_type *type,
+		float distance,
+		float velocity);
+
 struct space_obj_type {
 	SPACE_OBJ_FLAGS flags;
 	PIXEL icon;
@@ -73,6 +84,7 @@ struct space_obj_type {
        	float friction;
 	float acceleration;
 	float rotation;
+	struct projectile proj;
 };
 
 void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags);
@@ -98,6 +110,8 @@ float *sotype_friction(struct space_obj_type *self);
 float *sotype_acceleration(struct space_obj_type *self);
 
 float *sotype_rotation(struct space_obj_type *self);
+
+struct projectile *sotype_proj(struct space_obj_type *self);
 
 void init_solist(struct space_obj_node *list);
 

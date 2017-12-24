@@ -147,6 +147,16 @@ SO_GETTER(COORD, dir);
 SO_GETTER(COORD, pos);
 SO_GETTER(COORD, vel);
 
+void projectile_init(struct projectile *p,
+		const struct space_obj_type *type,
+		float distance,
+		float velocity)
+{
+	p->type = type;
+	p->distance = distance;
+	p->velocity = velocity;
+}
+
 void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 {
 	sot->flags = flags;
@@ -161,6 +171,11 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 	sot->friction = 1.0;
 	sot->acceleration = 0.0;
 	sot->rotation = 0.0;
+	sot->proj = (struct projectile) {
+		.type = NULL, /* TODO: Add default projectile type? */
+		.distance = 2.0,
+		.velocity = 1.0,
+	};
 }
 
 #define SOTYPE_GETTER(type, field) \
@@ -177,29 +192,24 @@ SOTYPE_GETTER(float, mass);
 SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
 SOTYPE_GETTER(float, rotation);
+SOTYPE_GETTER(struct projectile, proj);
 
 static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 {
-	static struct space_obj_type bullet_ty = { .name = NULL };
-	if (bullet_ty.name == NULL) {
-		sotype_init(&bullet_ty, 0);
-		*sotype_icon(&bullet_ty) = pixel('`', RED);
-		*sotype_name(&bullet_ty) = "bullet";
-		*sotype_lifetime(&bullet_ty) = 60;
-	}
 	if (self->reload == 0) {
 		self->reload = self->type->reload;
 		--self->ammo;
-		struct space_obj_node *b = malloc(sizeof(struct space_obj_node));
-		space_obj_init(&b->so, &bullet_ty);
-		b->so.pos = self->pos;
+		struct space_obj_node *p = malloc(sizeof(struct space_obj_node));
+		const struct projectile *proj = &self->type->proj;
+		space_obj_init(&p->so, proj->type);
+		p->so.pos = self->pos;
 		space_obj_calc_dir(self);
-		b->so.pos.x += self->dir.x * 2;
-		b->so.pos.y += self->dir.y * 2;
-		b->so.vel = self->vel;
-		b->so.vel.x += self->dir.x * 2;
-		b->so.vel.y += self->dir.y * 2;
-		return b;
+		p->so.pos.x += self->dir.x * proj->distance;
+		p->so.pos.y += self->dir.y * proj->distance;
+		p->so.vel = self->vel;
+		p->so.vel.x += self->dir.x * proj->velocity;
+		p->so.vel.y += self->dir.y * proj->velocity;
+		return p;
 	} else
 		return NULL;
 
