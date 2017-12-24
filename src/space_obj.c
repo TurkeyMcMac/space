@@ -5,12 +5,6 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define SPACE_OBJ_PLAYER (1 << 0)
-#define SPACE_OBJ_TRACK (1 << 1)
-#define SPACE_OBJ_SHOOT (1 << 2)
-#define SPACE_OBJ_SOLID (1 << 3)
-#define SPACE_OBJ_EFFECT (1 << 4)
-
 struct simulated {
 	enum sim_action action;
 	struct space_obj_node *insert;
