@@ -25,7 +25,7 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->ammo = type->reload;
 	so->reload = 0;
 	so->angle = 0.0;
-	so->dir = (COORD) { 0.0, 0.0 };
+	so->dir = (COORD) { 1.0, 0.0 };
 	so->pos = (COORD) { 0.0, 0.0 };
 	so->vel = (COORD) { 0.0, 0.0 };
 }
@@ -53,12 +53,12 @@ static int space_obj_update(struct space_obj *self)
 static void space_obj_rotate(struct space_obj *self, float angle)
 {
 	self->angle += angle;
-	self->dir = (COORD) { 0.0, 0.0 };
+	self->dir.x = FP_NAN;
 }
 
 static void space_obj_calc_dir(struct space_obj *self)
 {
-	if (self->dir.x == 0.0 && self->dir.y == 0.0) {
+	if (self->dir.x == FP_NAN) {
 		self->dir.x = cosf(self->angle);
 		self->dir.y = sinf(self->angle);
 	}
