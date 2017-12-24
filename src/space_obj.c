@@ -295,7 +295,7 @@ static void sonode_unlink(struct space_obj_node *self)
 		self->next = NODE_UNLINKED;
 }
 
-int space_objs_simulate(struct space_obj_node *list, char last_key, struct canvas *c)
+int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c)
 {
 	struct space_obj_node *node, *last_node;
 	for (node = list; node != NULL; last_node = node, node = node->next) {

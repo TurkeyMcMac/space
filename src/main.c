@@ -38,7 +38,7 @@ int main(void)
 
 	char keybuf[5];
 	char lk = last_key(keybuf, 5);
-	while (space_objs_simulate(sos, lk, &c)) {
+	while (simulate_solist(sos, lk, &c)) {
 		canvas_print(&c, stderr);
 		fflush(stderr);
 		tick(&t);
