@@ -309,3 +309,17 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 	}
 	return 1;
 }
+
+void init_solist(struct space_obj_node *list)
+{
+	list->next = NULL;
+	list->rc = 0;
+}
+
+struct space_obj *sonode_inner(struct space_obj_node *self) { return &self->so; }
+
+void push_to_solist(struct space_obj_node *list, struct space_obj_node *p)
+{
+	p->next = list->next;
+	list->next = p;
+}

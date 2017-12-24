@@ -99,6 +99,12 @@ float *sotype_acceleration(struct space_obj_type *self);
 
 float *sotype_rotation(struct space_obj_type *self);
 
+void init_solist(struct space_obj_node *list);
+
+struct space_obj *sonode_inner(struct space_obj_node *self);
+
+void push_to_solist(struct space_obj_node *list, struct space_obj_node *p);
+
 int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c);
 
 #endif

@@ -3,8 +3,6 @@
 #include "space_obj.h"
 #include "ticker.h"
 
-#include <stdlib.h>
-
 int main(void)
 {
 	struct space_obj_type sot;
@@ -19,8 +17,9 @@ int main(void)
 	*sotype_friction(&sot) = 0.99;
 	*sotype_acceleration(&sot) = 0.03;
 	*sotype_rotation(&sot) = 0.05;
-	struct space_obj_node *sos = calloc(1, sizeof(struct space_obj_node));
-	struct space_obj *so = &sos->so;
+	struct space_obj_node sol;
+	init_solist(&sol);
+	struct space_obj *so = sonode_inner(&sol);
 	space_obj_init(so, &sot);
 	space_obj_pos(so)->y = 50.0;
 	struct canvas c;
@@ -38,7 +37,7 @@ int main(void)
 
 	char keybuf[5];
 	char lk = last_key(keybuf, 5);
-	while (simulate_solist(sos, lk, &c)) {
+	while (simulate_solist(&sol, lk, &c)) {
 		canvas_print(&c, stderr);
 		fflush(stderr);
 		tick(&t);
