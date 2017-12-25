@@ -24,14 +24,20 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->vel = (COORD) { 0.0, 0.0 };
 }
 
-static int space_obj_update(struct space_obj *self)
+static int space_obj_death(struct space_obj *self)
+{
+	if (self->lifetime == 0 || self->health <= 0)
+		return (self->type->flags & SPACE_OBJ_PLAYER) ? STOP_GAME : REM_SELF;
+	else
+		return NOTHING;
+}
+
+static void space_obj_update(struct space_obj *self)
 {
 	self->pos.x += self->vel.x;
 	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
-	if (self->lifetime == 0 || self->health <= 0)
-		return (self->type->flags & SPACE_OBJ_PLAYER) ? STOP_GAME : REM_SELF;
 	--self->lifetime;
 	if (self->type->flags & (SPACE_OBJ_PLAYER | SPACE_OBJ_SHOOT)) {
 		if (self->reload > 0)
@@ -41,7 +47,6 @@ static int space_obj_update(struct space_obj *self)
 			self->ammo = self->type->ammo;
 		}
 	}
-	return NOTHING;
 }
 
 static void space_obj_rotate(struct space_obj *self, float angle)
@@ -196,6 +201,7 @@ static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 		struct space_obj_node *p = malloc(sizeof(struct space_obj_node));
 		const struct projectile *proj = &self->type->proj;
 		space_obj_init(&p->so, proj->type);
+		p->so.target = self->target;
 		p->so.pos = self->pos;
 		space_obj_calc_dir(self);
 		p->so.pos.x += self->dir.x * proj->distance;
@@ -228,6 +234,62 @@ static struct space_obj *sonode_get(struct space_obj_node *self)
 		return &self->so;
 }
 
+#define WIDTH 0.75
+
+static void space_obj_collide(struct space_obj *self, struct space_obj *other)
+{
+	COORD diff;
+	diff.x = other->pos.x - self->pos.x;
+	diff.y = other->pos.y - self->pos.y;
+	if (fabsf(diff.x) < WIDTH * 2 && fabsf(diff.y) < WIDTH * 2) {
+		if (diff.x > 0.0) {
+			if (diff.y > 0.0) {
+				if (diff.x > diff.y) {
+					self->vel.x *= -1;
+					self->pos.x -= diff.x + 0.01;
+					other->vel.x *= -1;
+				} else {
+					self->vel.y *= -1;
+					self->pos.y -= diff.y + 0.01;
+					other->vel.y *= -1;
+				}
+			} else {
+				if (diff.x > -diff.y) {
+					self->vel.x *= -1;
+					self->pos.x -= diff.x + 0.01;
+					other->vel.x *= -1;
+				} else {
+					self->vel.y *= -1;
+					self->pos.y -= diff.y + 0.01;
+					other->vel.y *= -1;
+				}
+			}
+		} else {
+			if (diff.y > 0.0) {
+				if (diff.x < -diff.y) {
+					self->vel.x *= -1;
+					self->pos.x -= diff.x + 0.01;
+					other->vel.x *= -1;
+				} else {
+					self->vel.y *= -1;
+					self->pos.y -= diff.y + 0.01;
+					other->vel.y *= -1;
+				}
+			} else {
+				if (diff.x < diff.y) {
+					self->vel.x *= -1;
+					self->pos.x -= diff.x + 0.01;
+					other->vel.x *= -1;
+				} else {
+					self->vel.y *= -1;
+					self->pos.y -= diff.y + 0.01;
+					other->vel.y *= -1;
+				}
+			}
+		}
+	}
+}
+
 static struct space_obj_node *space_obj_react(struct space_obj *self,
 		struct space_obj_node *others,
 		char last_key)
@@ -236,21 +298,21 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 		switch (last_key) {
 			case 'w':
 				space_obj_thrust(self);
-				break;
+				return NULL;
 			case 'a':
 				space_obj_rleft(self);
-				break;
+				return NULL;
 			case 'd':
 				space_obj_rright(self);
-				break;
+				return NULL;
 			case 'q':
 				space_obj_rleft(self);
 				space_obj_thrust(self);
-				break;
+				return NULL;
 			case 'e':
 				space_obj_rright(self);
 				space_obj_thrust(self);
-				break;
+				return NULL;
 			case 'W':
 				space_obj_thrust(self);
 				return space_obj_shoot(self);
@@ -272,9 +334,35 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 				return space_obj_shoot(self);
 			case '\04':
 				self->health = 0;
-				break;
+				return NULL;
 		}
 	}
+	if (self->type->flags & (SPACE_OBJ_TRACK | SPACE_OBJ_SHOOT)) {
+		struct space_obj_node *target;
+		if (sonode_get(self->target) == NULL) {
+			self->target = NULL;
+			return NULL;
+		}
+		COORD tvec;
+		tvec.x = self->target->so.pos.x - self->pos.x;
+		tvec.y = self->target->so.pos.y - self->pos.y;
+		space_obj_calc_dir(self);
+		if (self->dir.y * tvec.x + WIDTH < self->dir.x * tvec.y)
+			space_obj_rright(self);
+		else if (self->dir.y * tvec.x - WIDTH > self->dir.x * tvec.y)
+			space_obj_rleft(self);
+		else {
+			if (self->type->flags & SPACE_OBJ_TRACK)
+				space_obj_thrust(self);
+			if (self->type->flags & SPACE_OBJ_SHOOT)
+				return space_obj_shoot(self);
+		}
+	}
+	if (self->type->flags & SPACE_OBJ_SOLID)
+		for (; others != NULL; others = others->next)
+			if (others->so.type->flags & SPACE_OBJ_SOLID)
+				space_obj_collide(self, &others->so);
+
 	return NULL;
 }
 
@@ -291,21 +379,22 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 	struct space_obj_node *node, *last_node;
 	for (node = list; node != NULL; last_node = node, node = node->next) {
 		space_obj_undraw(&node->so, c);
-		struct space_obj_node *insert = space_obj_react(&node->so, list, last_key);
-		switch (space_obj_update(&node->so)) {
+		switch (space_obj_death(&node->so)) {
 			case NOTHING:
-				space_obj_draw(&node->so, c);
+				space_obj_update(&node->so);
 				break;
 			case REM_SELF: /* The first item (the player) will never be removed, so
 					  that case need not be handled. */
 				last_node->next = node->next;
 				sonode_unlink(node);
 				node = last_node;
-				break;
+				goto INSERT;
 			case STOP_GAME:
-				space_obj_draw(&node->so, c);
 				return 0;
 		}
+		struct space_obj_node *insert = space_obj_react(&node->so, list, last_key);
+		space_obj_draw(&node->so, c);
+		INSERT:
 		if (insert) {
 			insert->next = node->next;
 			node->next = insert;
