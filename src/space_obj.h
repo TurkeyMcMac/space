@@ -60,7 +60,9 @@ COORD *space_obj_vel(struct space_obj *self);
 #define SPACE_OBJ_SOLID (1 << 3)
 #define SPACE_OBJ_EFFECT (1 << 4)
 
-typedef int SPACE_OBJ_FLAGS;
+typedef unsigned char SPACE_OBJ_FLAGS;
+
+typedef unsigned char TEAM;
 
 struct projectile {
 	const struct space_obj_type *type;
@@ -75,9 +77,11 @@ void projectile_init(struct projectile *p,
 
 struct space_obj_type {
 	SPACE_OBJ_FLAGS flags;
+	TEAM team, collide;
 	PIXEL icon;
 	const char *name;
 	int health;
+	int damage;
 	int lifetime;
 	short reload, reload_burst, ammo;
 	float mass;
@@ -95,6 +99,8 @@ const char **sotype_name(struct space_obj_type *self);
 
 int *sotype_health(struct space_obj_type *self);
 
+int *sotype_damage(struct space_obj_type *self);
+
 int *sotype_lifetime(struct space_obj_type *self);
 
 short *sotype_reload(struct space_obj_type *self);
@@ -110,6 +116,10 @@ float *sotype_friction(struct space_obj_type *self);
 float *sotype_acceleration(struct space_obj_type *self);
 
 float *sotype_rotation(struct space_obj_type *self);
+
+TEAM *sotype_team(struct space_obj_type *self);
+
+TEAM *sotype_collide(struct space_obj_type *self);
 
 struct projectile *sotype_proj(struct space_obj_type *self);
 

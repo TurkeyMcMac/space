@@ -159,9 +159,12 @@ void projectile_init(struct projectile *p,
 void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 {
 	sot->flags = flags;
+	sot->team = 1;
+	sot->collide = ~1;
 	sot->icon = pixel('_', WHITE);
 	sot->name = "(none)";
 	sot->health = 1;
+	sot->damage = 1;
 	sot->lifetime = -1;
 	sot->ammo = 0;
 	sot->reload = 0;
@@ -192,6 +195,9 @@ SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
 SOTYPE_GETTER(float, rotation);
 SOTYPE_GETTER(struct projectile, proj);
+SOTYPE_GETTER(TEAM, team);
+SOTYPE_GETTER(TEAM, collide);
+SOTYPE_GETTER(int, damage);
 
 static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 {
@@ -241,51 +247,50 @@ static void space_obj_collide(struct space_obj *self, struct space_obj *other)
 	COORD diff;
 	diff.x = other->pos.x - self->pos.x;
 	diff.y = other->pos.y - self->pos.y;
-	if (fabsf(diff.x) < WIDTH * 2 && fabsf(diff.y) < WIDTH * 2) {
-		if (diff.x > 0.0) {
-			if (diff.y > 0.0) {
-				if (diff.x > diff.y) {
-					self->vel.x *= -1;
-					self->pos.x -= diff.x + 0.01;
-					other->vel.x *= -1;
-				} else {
-					self->vel.y *= -1;
-					self->pos.y -= diff.y + 0.01;
-					other->vel.y *= -1;
-				}
+	if (fabsf(diff.x) < WIDTH * 2.0 && fabsf(diff.y) < WIDTH * 2.0) {
+		if (self->type->collide & other->type->team) {
+			self->health -= other->type->damage;
+			other->health -= self->type->damage;
+			if (self->health < 0 || other->health < 0)
+				return;
+		}
+
+		if (fabsf(diff.x) > fabsf(diff.y)) {
+			if (diff.x > 0.0)
+				self->pos.x = other->pos.x - WIDTH * 2.0;
+			else
+				self->pos.x = other->pos.x + WIDTH * 2.0;
+			diff = self->vel;
+			if (self->vel.x > 0.0) {
+				if (other->vel.x > 0.0)
+					self->vel.x -= other->vel.x * other->type->mass / self->type->mass;
+				else
+					self->vel.x += other->vel.x * other->type->mass / self->type->mass;
 			} else {
-				if (diff.x > -diff.y) {
-					self->vel.x *= -1;
-					self->pos.x -= diff.x + 0.01;
-					other->vel.x *= -1;
-				} else {
-					self->vel.y *= -1;
-					self->pos.y -= diff.y + 0.01;
-					other->vel.y *= -1;
-				}
+				if (other->vel.x > 0.0)
+					self->vel.x += other->vel.x * other->type->mass / self->type->mass;
+				else
+					self->vel.x -= other->vel.x * other->type->mass / self->type->mass;
 			}
+			other->vel.x += diff.x * self->type->mass / other->type->mass;
 		} else {
-			if (diff.y > 0.0) {
-				if (diff.x < -diff.y) {
-					self->vel.x *= -1;
-					self->pos.x -= diff.x + 0.01;
-					other->vel.x *= -1;
-				} else {
-					self->vel.y *= -1;
-					self->pos.y -= diff.y + 0.01;
-					other->vel.y *= -1;
-				}
+			if (diff.y > 0.0)
+				self->pos.y = other->pos.y - WIDTH * 2.0;
+			else
+				self->pos.y = other->pos.y + WIDTH * 2.0;
+			diff = self->vel;
+			if (self->vel.y > 0.0) {
+				if (other->vel.y > 0.0)
+					self->vel.y -= other->vel.y * other->type->mass / self->type->mass;
+				else
+					self->vel.y += other->vel.y * other->type->mass / self->type->mass;
 			} else {
-				if (diff.x < diff.y) {
-					self->vel.x *= -1;
-					self->pos.x -= diff.x + 0.01;
-					other->vel.x *= -1;
-				} else {
-					self->vel.y *= -1;
-					self->pos.y -= diff.y + 0.01;
-					other->vel.y *= -1;
-				}
+				if (other->vel.y > 0.0)
+					self->vel.y += other->vel.y * other->type->mass / self->type->mass;
+				else
+					self->vel.y -= other->vel.y * other->type->mass / self->type->mass;
 			}
+			other->vel.y += diff.y * self->type->mass / other->type->mass;
 		}
 	}
 }
@@ -339,9 +344,9 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 	}
 	if (self->type->flags & (SPACE_OBJ_TRACK | SPACE_OBJ_SHOOT)) {
 		struct space_obj_node *target;
-		if (sonode_get(self->target) == NULL) {
+		if (self->target == NULL || sonode_get(self->target) == NULL) {
 			self->target = NULL;
-			return NULL;
+			goto RETARGET;
 		}
 		COORD tvec;
 		tvec.x = self->target->so.pos.x - self->pos.x;
@@ -358,9 +363,29 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 				return space_obj_shoot(self);
 		}
 	}
-	if (self->type->flags & SPACE_OBJ_SOLID)
+	RETARGET:
+	if (self->type->flags & (SPACE_OBJ_SHOOT | SPACE_OBJ_TRACK) && self->target == NULL) {
+		float target_dist = 999999999999.0;
+		for (; others != NULL; others = others->next) {
+			struct space_obj *other = &others->so;
+			if (self == other)
+				continue;
+			space_obj_collide(self, other);
+			if (self->type->collide & other->type->team) {
+				float other_dist = fabsf(other->pos.x - self->pos.x)
+					+ fabsf(other->pos.y - self->pos.y);
+				if (other_dist < target_dist) {
+					target_dist = other_dist;
+					self->target = others;
+				}
+			}
+		}
+		if (self->target != NULL) {
+			++self->target->rc;
+		}
+	} else
 		for (; others != NULL; others = others->next)
-			if (others->so.type->flags & SPACE_OBJ_SOLID)
+			if (self != &others->so)
 				space_obj_collide(self, &others->so);
 
 	return NULL;
