@@ -34,27 +34,26 @@ static int space_obj_death(struct space_obj *self)
 
 #define WORLD_WIDTH 200
 #define WORLD_HEIGHT 100
+#define WALL_BOUNCE_REDUCTION 0.5
 
 static void space_obj_update(struct space_obj *self)
 {
-	if (self->pos.x < 1) {
-		self->pos.x = 1;
-		self->vel.x *= -0.5;
-	} else if (self->pos.x > WORLD_WIDTH - 1) {
-		self->pos.x = WORLD_WIDTH - 1;
-		self->vel.x *= -0.5;
+	if (self->pos.x < self->type->width) {
+		self->pos.x = self->type->width;
+		self->vel.x *= -WALL_BOUNCE_REDUCTION;
+	} else if (self->pos.x > WORLD_WIDTH - self->type->width) {
+		self->pos.x = WORLD_WIDTH - self->type->width;
+		self->vel.x *= -WALL_BOUNCE_REDUCTION;
 	} else
 		self->pos.x += self->vel.x;
-	if (self->pos.y < 1) {
-		self->pos.y = 1;
-		self->vel.y *= -0.5;
-	} else if (self->pos.y > WORLD_HEIGHT - 1) {
-		self->pos.y = WORLD_HEIGHT - 1;
-		self->vel.y *= -0.5;
+	if (self->pos.y < self->type->width) {
+		self->pos.y = self->type->width;
+		self->vel.y *= -WALL_BOUNCE_REDUCTION;
+	} else if (self->pos.y > WORLD_HEIGHT - self->type->width) {
+		self->pos.y = WORLD_HEIGHT - self->type->width;
+		self->vel.y *= -WALL_BOUNCE_REDUCTION;
 	} else
 		self->pos.y += self->vel.y;
-//	self->pos.x += self->vel.x;
-//	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
 	--self->lifetime;
@@ -189,6 +188,7 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 	sot->reload = 0;
 	sot->reload_burst = 0;
 	sot->mass = 1.0;
+	sot->width = 0.75;
 	sot->friction = 1.0;
 	sot->acceleration = 0.0;
 	sot->rotation = 0.0;
@@ -210,6 +210,7 @@ SOTYPE_GETTER(short, reload);
 SOTYPE_GETTER(short, reload_burst);
 SOTYPE_GETTER(short, ammo);
 SOTYPE_GETTER(float, mass);
+SOTYPE_GETTER(float, width);
 SOTYPE_GETTER(float, friction);
 SOTYPE_GETTER(float, acceleration);
 SOTYPE_GETTER(float, rotation);
@@ -259,14 +260,12 @@ static struct space_obj *sonode_get(struct space_obj_node *self)
 		return &self->so;
 }
 
-#define WIDTH 0.75
-
 static void space_obj_collide(struct space_obj *self, struct space_obj *other)
 {
 	COORD diff;
 	diff.x = other->pos.x - self->pos.x;
 	diff.y = other->pos.y - self->pos.y;
-	if (fabsf(diff.x) < WIDTH * 2.0 && fabsf(diff.y) < WIDTH * 2.0) {
+	if (fabsf(diff.x) < self->type->width * 2.0 && fabsf(diff.y) < self->type->width * 2.0) {
 		if (self->type->collide & other->type->team) {
 			self->health -= other->type->damage;
 			other->health -= self->type->damage;
@@ -275,17 +274,17 @@ static void space_obj_collide(struct space_obj *self, struct space_obj *other)
 
 		if (fabsf(diff.x) > fabsf(diff.y)) {
 			if (diff.x > 0.0)
-				self->pos.x = other->pos.x - WIDTH * 2.0;
+				self->pos.x = other->pos.x - self->type->width * 2.0;
 			else
-				self->pos.x = other->pos.x + WIDTH * 2.0;
+				self->pos.x = other->pos.x + self->type->width * 2.0;
 			self->vel.x = (self->vel.x * self->type->mass + other->vel.x * other->type->mass) /
 				(self->type->mass + other->type->mass);
 			other->vel.x = self->vel.x;
 		} else {
 			if (diff.y > 0.0)
-				self->pos.y = other->pos.y - WIDTH * 2.0;
+				self->pos.y = other->pos.y - self->type->width * 2.0;
 			else
-				self->pos.y = other->pos.y + WIDTH * 2.0;
+				self->pos.y = other->pos.y + self->type->width * 2.0;
 			self->vel.y = (self->vel.y * self->type->mass + other->vel.y * other->type->mass) /
 				(self->type->mass + other->type->mass);
 			other->vel.y = self->vel.y;
@@ -350,9 +349,9 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 		tvec.x = self->target->so.pos.x - self->pos.x;
 		tvec.y = self->target->so.pos.y - self->pos.y;
 		space_obj_calc_dir(self);
-		if (self->dir.y * tvec.x + WIDTH < self->dir.x * tvec.y)
+		if (self->dir.y * tvec.x + self->type->width < self->dir.x * tvec.y)
 			space_obj_rright(self);
-		else if (self->dir.y * tvec.x - WIDTH > self->dir.x * tvec.y)
+		else if (self->dir.y * tvec.x - self->type->width > self->dir.x * tvec.y)
 			space_obj_rleft(self);
 		else {
 			if (self->type->flags & SPACE_OBJ_TRACK)

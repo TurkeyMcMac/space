@@ -85,6 +85,7 @@ struct space_obj_type {
 	int lifetime;
 	short reload, reload_burst, ammo;
 	float mass;
+	float width;
        	float friction;
 	float acceleration;
 	float rotation;
@@ -110,6 +111,8 @@ short *sotype_reload_burst(struct space_obj_type *self);
 short *sotype_ammo(struct space_obj_type *self);
 
 float *sotype_mass(struct space_obj_type *self);
+
+float *sotype_width(struct space_obj_type *self);
 
 float *sotype_friction(struct space_obj_type *self);
 

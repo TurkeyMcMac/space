@@ -12,6 +12,7 @@ int main(void)
 		*sotype_lifetime(&proj_type) = 100;
 		*sotype_team(&proj_type) = 1 << 1;
 		*sotype_collide(&proj_type) = ~(1 << 1);
+		*sotype_width(&proj_type) = 0.1;
 	sotype_init(&player_type, SPACE_OBJ_PLAYER);
 		*sotype_name(&player_type) = "Player";
 		*sotype_icon(&player_type) = pixel('X', GREEN);
@@ -54,6 +55,7 @@ int main(void)
 		*sotype_reload(&drone_type) = 30;
 		*sotype_reload_burst(&drone_type) = 40;
 		*sotype_ammo(&drone_type) = 10;
+		*sotype_width(&drone_type) = 0.2;
 		projectile_init(sotype_proj(&drone_type), &proj_type, 3.0, 0.7);
 	struct space_obj_node sol, *npc_node1, *npc_node2;
 	npc_node1 = malloc(sizeof(struct space_obj_node));
