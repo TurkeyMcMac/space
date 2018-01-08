@@ -32,10 +32,29 @@ static int space_obj_death(struct space_obj *self)
 		return NOTHING;
 }
 
+#define WORLD_WIDTH 200
+#define WORLD_HEIGHT 100
+
 static void space_obj_update(struct space_obj *self)
 {
-	self->pos.x += self->vel.x;
-	self->pos.y += self->vel.y;
+	if (self->pos.x < 1) {
+		self->pos.x = 1;
+		self->vel.x *= -0.5;
+	} else if (self->pos.x > WORLD_WIDTH - 1) {
+		self->pos.x = WORLD_WIDTH - 1;
+		self->vel.x *= -0.5;
+	} else
+		self->pos.x += self->vel.x;
+	if (self->pos.y < 1) {
+		self->pos.y = 1;
+		self->vel.y *= -0.5;
+	} else if (self->pos.y > WORLD_HEIGHT - 1) {
+		self->pos.y = WORLD_HEIGHT - 1;
+		self->vel.y *= -0.5;
+	} else
+		self->pos.y += self->vel.y;
+//	self->pos.x += self->vel.x;
+//	self->pos.y += self->vel.y;
 	self->vel.x *= self->type->friction;
 	self->vel.y *= self->type->friction;
 	--self->lifetime;
@@ -251,46 +270,25 @@ static void space_obj_collide(struct space_obj *self, struct space_obj *other)
 		if (self->type->collide & other->type->team) {
 			self->health -= other->type->damage;
 			other->health -= self->type->damage;
-			if (self->health < 0 || other->health < 0)
-				return;
 		}
+	
 
 		if (fabsf(diff.x) > fabsf(diff.y)) {
 			if (diff.x > 0.0)
 				self->pos.x = other->pos.x - WIDTH * 2.0;
 			else
 				self->pos.x = other->pos.x + WIDTH * 2.0;
-			diff = self->vel;
-			if (self->vel.x > 0.0) {
-				if (other->vel.x > 0.0)
-					self->vel.x -= other->vel.x * other->type->mass / self->type->mass;
-				else
-					self->vel.x += other->vel.x * other->type->mass / self->type->mass;
-			} else {
-				if (other->vel.x > 0.0)
-					self->vel.x += other->vel.x * other->type->mass / self->type->mass;
-				else
-					self->vel.x -= other->vel.x * other->type->mass / self->type->mass;
-			}
-			other->vel.x += diff.x * self->type->mass / other->type->mass;
+			self->vel.x = (self->vel.x * self->type->mass + other->vel.x * other->type->mass) /
+				(self->type->mass + other->type->mass);
+			other->vel.x = self->vel.x;
 		} else {
 			if (diff.y > 0.0)
 				self->pos.y = other->pos.y - WIDTH * 2.0;
 			else
 				self->pos.y = other->pos.y + WIDTH * 2.0;
-			diff = self->vel;
-			if (self->vel.y > 0.0) {
-				if (other->vel.y > 0.0)
-					self->vel.y -= other->vel.y * other->type->mass / self->type->mass;
-				else
-					self->vel.y += other->vel.y * other->type->mass / self->type->mass;
-			} else {
-				if (other->vel.y > 0.0)
-					self->vel.y += other->vel.y * other->type->mass / self->type->mass;
-				else
-					self->vel.y -= other->vel.y * other->type->mass / self->type->mass;
-			}
-			other->vel.y += diff.y * self->type->mass / other->type->mass;
+			self->vel.y = (self->vel.y * self->type->mass + other->vel.y * other->type->mass) /
+				(self->type->mass + other->type->mass);
+			other->vel.y = self->vel.y;
 		}
 	}
 }
