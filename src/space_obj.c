@@ -36,21 +36,21 @@ static int space_obj_death(struct space_obj *self)
 #define WORLD_HEIGHT 100
 #define WALL_BOUNCE_REDUCTION 0.5
 
-static void space_obj_update(struct space_obj *self)
+static void space_obj_update(struct space_obj *self, float world_width, float world_height)
 {
 	if (self->pos.x < self->type->width) {
 		self->pos.x = self->type->width;
 		self->vel.x *= -WALL_BOUNCE_REDUCTION;
-	} else if (self->pos.x > WORLD_WIDTH - self->type->width) {
-		self->pos.x = WORLD_WIDTH - self->type->width;
+	} else if (self->pos.x > world_width - self->type->width) {
+		self->pos.x = world_width - self->type->width;
 		self->vel.x *= -WALL_BOUNCE_REDUCTION;
 	} else
 		self->pos.x += self->vel.x;
 	if (self->pos.y < self->type->width) {
 		self->pos.y = self->type->width;
 		self->vel.y *= -WALL_BOUNCE_REDUCTION;
-	} else if (self->pos.y > WORLD_HEIGHT - self->type->width) {
-		self->pos.y = WORLD_HEIGHT - self->type->width;
+	} else if (self->pos.y > world_height - self->type->width) {
+		self->pos.y = world_height - self->type->width;
 		self->vel.y *= -WALL_BOUNCE_REDUCTION;
 	} else
 		self->pos.y += self->vel.y;
@@ -403,7 +403,7 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 		space_obj_undraw(&node->so, c);
 		switch (space_obj_death(&node->so)) {
 			case NOTHING:
-				space_obj_update(&node->so);
+				space_obj_update(&node->so, c->width, c->height * 2);
 				break;
 			case REM_SELF: /* The first item (the player) will never be removed, so
 					  that case need not be handled. */
