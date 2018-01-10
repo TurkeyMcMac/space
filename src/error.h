@@ -1,5 +1,3 @@
-/* NOTE: This interface is not thread-safe! */
-
 #ifndef _ERROR_H
 
 #include <stdio.h>
