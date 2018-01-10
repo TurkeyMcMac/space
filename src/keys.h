@@ -5,9 +5,9 @@
 #include <stddef.h>
 #include <termios.h>
 
-void set_single_key_input(struct termios *old_settings);
+int set_single_key_input(struct termios *old_settings);
 
-void reset_single_key_input(const struct termios *old_settings);
+int reset_single_key_input(const struct termios *old_settings);
 
 char last_key(char *buf, size_t len);
 

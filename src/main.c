@@ -1,7 +1,11 @@
 #include "canvas.h"
+#include "error.h"
 #include "keys.h"
 #include "space_obj.h"
 #include "ticker.h"
+
+#include <errno.h>
+#include <stdlib.h>
 
 int main(void)
 {
@@ -78,25 +82,45 @@ int main(void)
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
 
 	struct ticker t;
-	ticker_init(&t, CLOCK_REALTIME, 0, 1000000000 / 40);
+	if CATCH (ticker_init,(&t, CLOCK_REALTIME, 0, 1000000000 / 40)) {
+		int errnum = errno;
+		print_errs(stderr);
+		return errnum;
+	}
 
 	char buf[BUFSIZ];
-	setbuf(stderr, buf);
+	setbuf(stdout, buf);
 
 	struct termios old_settings;
 
-	set_single_key_input(&old_settings);
-
-	char keybuf[5];
-	char lk = last_key(keybuf, 5);
-	while (simulate_solist(&sol, lk, &c)) {
-		canvas_print(&c, stderr);
-		fflush(stderr);
-		tick(&t);
-		canvas_unprint(&c, stderr);
-		lk = last_key(keybuf, 5);
+	if CATCH (set_single_key_input,(&old_settings)) {
+		int errnum = errno;
+		print_errs(stderr);
+		return errnum;
 	}
 
-	reset_single_key_input(&old_settings);
+	char keybuf[5];
+	char lk;
+	while (simulate_solist(&sol, lk, &c)) {
+		if CATCH_TO (lk, last_key,(keybuf, 5)) {
+			lk = '\0';
+			print_errs(stderr);
+		}
+		if CATCH (canvas_print,(&c, stdout))
+			print_errs(stderr);
+		if CATCH (fflush,(stdout))
+			print_errs(stderr);
+		if CATCH (tick,(&t))
+			print_errs(stderr);
+		if CATCH (canvas_unprint,(&c, stdout))
+			print_errs(stderr);
+	}
+
+	if CATCH (reset_single_key_input,(&old_settings)) {
+		int errnum = errno;
+		print_errs(stderr);
+		return errnum;
+	} else
+		return 0;
 }
 

@@ -10,7 +10,7 @@ struct ticker {
 	clockid_t clock_id;
 };
 
-void ticker_init(struct ticker *t, clockid_t clock_id, int sec, long nsec);
+int ticker_init(struct ticker *t, clockid_t clock_id, int sec, long nsec);
 
 int tick(struct ticker *t);
 
