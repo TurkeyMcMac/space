@@ -2,6 +2,7 @@
 
 #include "error.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <termios.h>
@@ -36,10 +37,11 @@ int reset_single_key_input(const struct termios *old_settings)
 
 char last_key(char *buf, size_t len)
 {
-	ssize_t nread;
-	if CATCH_TO (nread, read,(STDIN_FILENO, buf, len))
+	ssize_t nread = read(STDIN_FILENO, buf, len);
+	if (nread == FAILURE && errno != EAGAIN && errno != EWOULDBLOCK) {
+		push_err("read", __FILE__, __LINE__ - 2);
 		return FAILURE;
-	else if (nread > 0)
+	} else if (nread > 0)
 		return buf[nread - 1];
 	else
 		return '\0';
