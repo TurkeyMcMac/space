@@ -182,6 +182,7 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 {
 	sot->flags = flags;
 	sot->team = 1;
+	sot->target = 0;
 	sot->collide = ~1;
 	sot->icon = '_';
 	sot->color = WHITE;
@@ -223,6 +224,7 @@ SOTYPE_GETTER(float, rotation);
 SOTYPE_GETTER(struct projectile, proj);
 SOTYPE_GETTER(TEAM, team);
 SOTYPE_GETTER(TEAM, collide);
+SOTYPE_GETTER(TEAM, target);
 SOTYPE_GETTER(int, damage);
 
 static struct space_obj_node *space_obj_shoot(struct space_obj *self)
@@ -374,7 +376,7 @@ static struct space_obj_node *space_obj_react(struct space_obj *self,
 			if (self == other)
 				continue;
 			space_obj_collide(self, other);
-			if (self->type->collide & other->type->team) {
+			if (self->type->team & other->type->target) {
 				float other_dist = fabsf(other->pos.x - self->pos.x)
 					+ fabsf(other->pos.y - self->pos.y);
 				if (other_dist < target_dist) {

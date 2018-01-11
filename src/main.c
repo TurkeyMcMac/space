@@ -31,11 +31,13 @@ int main(void)
 		*sotype_mass(&player_type) = 20.0;
 		*sotype_acceleration(&player_type) = 0.01;
 		*sotype_rotation(&player_type) = 0.03;
+		*sotype_target(&player_type) = ~1;
 		projectile_init(sotype_proj(&player_type), &drone_type, 3.0, 0.4);
 	sotype_init(&npc_type, SPACE_OBJ_SHOOT | SPACE_OBJ_TRACK);
 		*sotype_name(&npc_type) = "Enemy";
 		*sotype_team(&npc_type) = 1 << 1;
 		*sotype_collide(&npc_type) = ~(1 << 1);
+		*sotype_target(&npc_type) = ~0;
 		*sotype_icon(&npc_type) = 'X';
 		*sotype_color(&npc_type) = YELLOW;
 		*sotype_lifetime(&npc_type) = -1;
