@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 
-typedef enum {
+enum {
 	BLACK	= '0',
 	RED	= '1',
 	GREEN	= '2',
@@ -13,7 +13,7 @@ typedef enum {
 	MAGENTA	= '5',
 	CYAN 	= '6',
 	WHITE 	= '7',
-} COLOR_CODE;
+};
 
 typedef struct {
 	char ch;
