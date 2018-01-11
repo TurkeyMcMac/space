@@ -86,7 +86,7 @@ struct space_obj_type {
 	short reload, reload_burst, ammo;
 	float mass;
 	float width;
-       	float friction;
+	float friction;
 	float acceleration;
 	float rotation;
 	struct projectile proj;
