@@ -78,7 +78,7 @@ void projectile_init(struct projectile *p,
 struct space_obj_type {
 	SPACE_OBJ_FLAGS flags;
 	TEAM team, collide;
-	PIXEL icon;
+	char icon, color;
 	const char *name;
 	int health;
 	int damage;
@@ -94,7 +94,9 @@ struct space_obj_type {
 
 void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags);
 
-PIXEL *sotype_icon(struct space_obj_type *self);
+char *sotype_icon(struct space_obj_type *self);
+
+char *sotype_color(struct space_obj_type *self);
 
 const char **sotype_name(struct space_obj_type *self);
 

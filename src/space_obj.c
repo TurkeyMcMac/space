@@ -116,8 +116,10 @@ static PIXEL *canvas_get_float(struct canvas *c, COORD p)
 static void space_obj_draw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
-	if (at)
-		*at = self->type->icon;
+	if (at) {
+		at->ch = self->type->icon;
+		at->color = self->type->color;
+	}
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		space_obj_calc_dir(self);
 		COORD targ = self->dir;
@@ -136,8 +138,10 @@ static void space_obj_draw(struct space_obj *self, struct canvas *c)
 static void space_obj_undraw(struct space_obj *self, struct canvas *c)
 {
 	PIXEL *at = canvas_get_float(c, self->pos);
-	if (at)
-		*at = EMPTY_SPACE_ICON;
+	if (at) {
+		at->ch = ' ';
+		at->color = WHITE;
+	}
 	if (self->type->flags & SPACE_OBJ_PLAYER) {
 		space_obj_calc_dir(self);
 		COORD targ = self->dir;
@@ -179,7 +183,8 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 	sot->flags = flags;
 	sot->team = 1;
 	sot->collide = ~1;
-	sot->icon = pixel('_', WHITE);
+	sot->icon = '_';
+	sot->color = WHITE;
 	sot->name = "(none)";
 	sot->health = 1;
 	sot->damage = 1;
@@ -202,7 +207,8 @@ void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags)
 #define SOTYPE_GETTER(type, field) \
 	type *sotype_##field(struct space_obj_type *self) { return &self->field; }
 
-SOTYPE_GETTER(PIXEL, icon);
+SOTYPE_GETTER(char, icon);
+SOTYPE_GETTER(char, color);
 SOTYPE_GETTER(const char *, name);
 SOTYPE_GETTER(int, health);
 SOTYPE_GETTER(int, lifetime);
