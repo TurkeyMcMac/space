@@ -57,7 +57,7 @@ int main(void)
 		*sotype_health(&npc_type) = 10;
 		*sotype_friction(&npc_type) = 0.99;
 		*sotype_mass(&npc_type) = 20.0;
-		//*sotype_acceleration(&npc_type) = 0.007;
+		*sotype_acceleration(&npc_type) = 0.007;
 		*sotype_rotation(&npc_type) = 0.02;
 		*sotype_reload(&npc_type) = 20;
 		*sotype_reload_burst(&npc_type) = 20;
