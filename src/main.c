@@ -10,7 +10,7 @@
 int main(void)
 {
 	struct space_obj_type proj_type, player_type, npc_type, drone_type;
-	sotype_init(&proj_type, 0);
+	sotype_init(&proj_type);
 		*sotype_name(&proj_type) = "Projectile";
 		*sotype_icon(&proj_type) = '`';
 		*sotype_color(&proj_type) = YELLOW;
@@ -18,7 +18,7 @@ int main(void)
 		*sotype_team(&proj_type) = 1 << 1;
 		*sotype_collide(&proj_type) = ~(1 << 1);
 		*sotype_width(&proj_type) = 0.1;
-	sotype_init(&player_type, SPACE_OBJ_PLAYER);
+	sotype_init(&player_type);
 		*sotype_name(&player_type) = "Player";
 		*sotype_icon(&player_type) = 'X';
 		*sotype_color(&player_type) = GREEN;
@@ -33,7 +33,7 @@ int main(void)
 		*sotype_rotation(&player_type) = 0.03;
 		*sotype_target(&player_type) = ~1;
 		projectile_init(sotype_proj(&player_type), &drone_type, 3.0, 0.4);
-	sotype_init(&npc_type, SPACE_OBJ_SHOOT | SPACE_OBJ_TRACK);
+	sotype_init(&npc_type);
 		*sotype_name(&npc_type) = "Enemy";
 		*sotype_team(&npc_type) = 1 << 1;
 		*sotype_collide(&npc_type) = ~(1 << 1);
@@ -50,7 +50,7 @@ int main(void)
 		*sotype_reload_burst(&npc_type) = 20;
 		*sotype_ammo(&npc_type) = 10;
 		projectile_init(sotype_proj(&npc_type), &proj_type, 3.0, 1.0);
-	sotype_init(&drone_type, SPACE_OBJ_TRACK);
+	sotype_init(&drone_type);
 		*sotype_name(&drone_type) = "Missile";
 		*sotype_icon(&drone_type) = '*';
 		*sotype_color(&drone_type) = GREEN;
@@ -61,11 +61,6 @@ int main(void)
 		*sotype_mass(&drone_type) = 3.0;
 		*sotype_acceleration(&drone_type) = 0.020;
 		*sotype_rotation(&drone_type) = 0.07;
-		*sotype_reload(&drone_type) = 30;
-		*sotype_reload_burst(&drone_type) = 40;
-		*sotype_ammo(&drone_type) = 10;
-		*sotype_width(&drone_type) = 0.2;
-		projectile_init(sotype_proj(&drone_type), &proj_type, 3.0, 0.7);
 	struct space_obj_node sol, *npc_node1, *npc_node2;
 	npc_node1 = malloc(sizeof(struct space_obj_node));
 	npc_node2 = malloc(sizeof(struct space_obj_node));

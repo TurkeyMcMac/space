@@ -54,14 +54,6 @@ COORD *space_obj_pos(struct space_obj *self);
 
 COORD *space_obj_vel(struct space_obj *self);
 
-#define SPACE_OBJ_PLAYER (1 << 0)
-#define SPACE_OBJ_TRACK (1 << 1)
-#define SPACE_OBJ_SHOOT (1 << 2)
-#define SPACE_OBJ_SOLID (1 << 3)
-#define SPACE_OBJ_EFFECT (1 << 4)
-
-typedef unsigned char SPACE_OBJ_FLAGS;
-
 typedef unsigned char TEAM;
 
 struct projectile {
@@ -76,7 +68,6 @@ void projectile_init(struct projectile *p,
 		float velocity);
 
 struct space_obj_type {
-	SPACE_OBJ_FLAGS flags;
 	TEAM team, collide, target;
 	char icon, color;
 	const char *name;
@@ -92,7 +83,7 @@ struct space_obj_type {
 	struct projectile proj;
 };
 
-void sotype_init(struct space_obj_type *sot, SPACE_OBJ_FLAGS flags);
+void sotype_init(struct space_obj_type *sot);
 
 char *sotype_icon(struct space_obj_type *self);
 
