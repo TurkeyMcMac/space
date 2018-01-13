@@ -32,19 +32,19 @@ int main(void)
 		*sotype_acceleration(&player_type) = 0.01;
 		*sotype_rotation(&player_type) = 0.03;
 		*sotype_target(&player_type) = ~1;
-		projectile_init(sotype_proj(&player_type), &drone_type, 3.0, 0.4);
+		projectile_init(sotype_proj(&player_type), &drone_type, -3.0, -0.4);
 	sotype_init(&npc_type);
 		*sotype_name(&npc_type) = "Enemy";
 		*sotype_team(&npc_type) = 1 << 1;
 		*sotype_collide(&npc_type) = ~(1 << 1);
-		*sotype_target(&npc_type) = ~0;
+		*sotype_target(&npc_type) = ~(1 << 1);
 		*sotype_icon(&npc_type) = 'X';
 		*sotype_color(&npc_type) = YELLOW;
 		*sotype_lifetime(&npc_type) = -1;
 		*sotype_health(&npc_type) = 10;
 		*sotype_friction(&npc_type) = 0.99;
 		*sotype_mass(&npc_type) = 20.0;
-		*sotype_acceleration(&npc_type) = 0.007;
+		//*sotype_acceleration(&npc_type) = 0.007;
 		*sotype_rotation(&npc_type) = 0.02;
 		*sotype_reload(&npc_type) = 20;
 		*sotype_reload_burst(&npc_type) = 20;
@@ -61,23 +61,20 @@ int main(void)
 		*sotype_mass(&drone_type) = 3.0;
 		*sotype_acceleration(&drone_type) = 0.020;
 		*sotype_rotation(&drone_type) = 0.07;
-	struct space_obj_node sol, *npc_node1, *npc_node2;
-	npc_node1 = malloc(sizeof(struct space_obj_node));
-	npc_node2 = malloc(sizeof(struct space_obj_node));
+	struct space_obj_node sol;
 	init_solist(&sol);
-	init_solist(npc_node1);
-	init_solist(npc_node2);
 	struct space_obj *so = sonode_inner(&sol);
 	space_obj_init(so, &player_type);
 	space_obj_pos(so)->y = 50.0;
 
-	space_obj_init(sonode_inner(npc_node1), &npc_type);
+	size_t i;
+	for (i = 0; i < 5; ++i) {
+		struct space_obj_node *npc_node = malloc(sizeof(struct space_obj_node));
+		init_solist(npc_node);
+		space_obj_init(sonode_inner(npc_node), &npc_type);
+		push_to_solist(&sol, npc_node);
+	}
 
-	space_obj_init(sonode_inner(npc_node2), &npc_type);
-	sonode_inner(npc_node2)->pos = (COORD) { 48.0, 75.0 };
-	sonode_inner(npc_node2)->target = &sol;
-	push_to_solist(&sol, npc_node1);
-	push_to_solist(&sol, npc_node2);
 	struct canvas c;
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
 
