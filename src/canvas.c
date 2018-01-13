@@ -54,10 +54,9 @@ PIXEL *canvas_get(struct canvas *self, size_t x, size_t y)
 		return NULL;
 }
 
-long canvas_print(const struct canvas *self, FILE *f)
+int canvas_print(const struct canvas *self, FILE *f)
 {
-	long total_write;
-	int last_write;
+	int last_write, total_write = 0;
 	size_t x, y;
 	for (y = 0; y < self->height; ++y) {
 		for (x = 0; x < self->width; ++x)
