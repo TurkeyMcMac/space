@@ -19,7 +19,8 @@ int main(void)
 {
 	struct sigaction canceller;
 	canceller.sa_handler = cancel_game;
-	sigaction(SIGINT, &canceller, NULL);
+	if CATCH (sigaction,(SIGINT, &canceller, NULL))
+		print_errs(stderr);
 
 	struct space_obj_type proj_type, player_type, npc_type, drone_type;
 	sotype_init(&proj_type);
