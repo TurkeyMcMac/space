@@ -205,9 +205,9 @@ void sotype_init(struct space_obj_type *sot)
 	sot->acceleration = 0.0;
 	sot->rotation = 0.0;
 	sot->proj = (struct projectile) {
-		.type = NULL, /* TODO: Add default projectile type? */
-		.distance = 2.0,
-		.velocity = 1.0,
+		.type = NULL,
+		.distance = 0.0,
+		.velocity = 0.0,
 	};
 }
 
