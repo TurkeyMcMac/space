@@ -5,10 +5,22 @@
 #include "ticker.h"
 
 #include <errno.h>
+#include <signal.h>
 #include <stdlib.h>
+
+int cancelled = 0;
+
+void cancel_game(int _)
+{
+	cancelled = 1;
+}
 
 int main(void)
 {
+	struct sigaction canceller;
+	canceller.sa_handler = cancel_game;
+	sigaction(SIGINT, &canceller, NULL);
+
 	struct space_obj_type proj_type, player_type, npc_type, drone_type;
 	sotype_init(&proj_type);
 		*sotype_name(&proj_type) = "Projectile";
@@ -98,7 +110,7 @@ int main(void)
 
 	char keybuf[5];
 	char lk;
-	while (simulate_solist(&sol, lk, &c)) {
+	while (!cancelled && simulate_solist(&sol, lk, &c)) {
 		if CATCH_TO (lk, last_key,(keybuf, 5)) {
 			lk = '\0';
 			print_errs(stderr);
@@ -112,6 +124,8 @@ int main(void)
 		if CATCH (canvas_unprint,(&c, stdout))
 			print_errs(stderr);
 	}
+
+	printf("Game over.\n");
 
 	if CATCH (reset_single_key_input,(&old_settings)) {
 		int errnum = errno;
