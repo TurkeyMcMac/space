@@ -425,14 +425,11 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 	space_obj_undraw_player(&list->so, c);
 	if (space_obj_death(&list->so))
 		return 0;
-	else {
-		space_obj_update(&list->so, c->width, c->height * 2);
-		insert = space_obj_react_player(&list->so, list, last_key);
-		if (insert) {
-			insert->next = list->next;
-			list->next = insert;
-		}
-		space_obj_draw_player(&list->so, c);
+	space_obj_update(&list->so, c->width, c->height * 2);
+	insert = space_obj_react_player(&list->so, list, last_key);
+	if (insert) {
+		insert->next = list->next;
+		list->next = insert;
 	}
 	struct space_obj_node *node, *last_node;
 	for (node = list->next, last_node = list; node != NULL; last_node = node, node = node->next) {
@@ -451,6 +448,7 @@ int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c
 			space_obj_draw(&node->so, c);
 		}
 	}
+	space_obj_draw_player(&list->so, c);
 	return 1;
 }
 
