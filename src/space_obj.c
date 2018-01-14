@@ -238,7 +238,10 @@ static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 		struct space_obj_node *p = malloc(sizeof(struct space_obj_node));
 		const struct projectile *proj = &self->type->proj;
 		space_obj_init(&p->so, proj->type);
-		p->so.target = self->target;
+		if (self->target != NULL) {
+			p->so.target = self->target;
+			++self->target->rc;
+		}
 		p->so.pos = self->pos;
 		space_obj_calc_dir(self);
 		p->so.pos.x += self->dir.x * proj->distance;
@@ -258,7 +261,6 @@ static void sonode_drop(struct space_obj_node *self)
 {
 	if (--self->rc == 0 && self->next == NODE_UNLINKED)
 		free(self);
-		
 }
 
 static struct space_obj *sonode_get(struct space_obj_node *self)
@@ -407,10 +409,14 @@ static struct space_obj_node *space_obj_react(struct space_obj *self, struct spa
 
 static void sonode_unlink(struct space_obj_node *self)
 {
+	if (self->so.target != NULL)
+		sonode_drop(self->so.target);
 	if (self->rc == 0)
 		free(self);
-	else
+	else {
+		self->so.target = NULL;
 		self->next = NODE_UNLINKED;
+	}
 }
 
 static void space_obj_update(struct space_obj *self, float width, float height)
