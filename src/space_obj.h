@@ -28,12 +28,6 @@ struct space_obj_node {
 
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type);
 
-enum sim_action {
-	NOTHING,
-	REM_SELF,
-	STOP_GAME,
-};
-
 #define EMPTY_SPACE_ICON (pixel(' ', WHITE))
 
 int *space_obj_health(struct space_obj *self);
