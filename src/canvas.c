@@ -75,7 +75,7 @@ int canvas_print(const struct canvas *self, FILE *f)
 int canvas_unprint(const struct canvas *self, FILE *f)
 {
 	int total_write;
-	if CATCH_TO (total_write, fprintf,(f, "\x1B[%luA", self->height))
+	if CATCH_TO (total_write, fprintf,(f, "\x1B[%luA", (long unsigned)self->height))
 		return FAILURE;
 	else
 		return total_write;
