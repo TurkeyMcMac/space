@@ -7,11 +7,6 @@
 
 #define so_projectile(so_ptr) ((so_ptr)->type->proj.type)
 
-struct simulated {
-	enum sim_action action;
-	struct space_obj_node *insert;
-};
-
 void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 {
 	so->type = type;
