@@ -61,11 +61,11 @@ int canvas_print(const struct canvas *self, FILE *f)
 	for (y = 0; y < self->height; ++y) {
 		for (x = 0; x < self->width; ++x)
 			if CATCH_TO (last_write, print_pixel,(*canvas_get_unck((struct canvas *)self, x, y), f))
-				return FAILURE;
+				;//return FAILURE;
 			else
 				total_write += last_write;
 		if CATCH_TO (last_write, fprintf,(f, "\n"))
-			return FAILURE;
+			;//return FAILURE;
 		else
 			total_write += last_write;
 	}

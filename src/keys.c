@@ -20,10 +20,7 @@ int set_single_key_input(struct termios *old_settings)
 		return FAILURE;
 	settings = *old_settings;
 	settings.c_lflag &= ~(ECHO|ICANON);
-	if CATCH (tcsetattr,(STDIN_FILENO, TCSANOW, &settings))
-		return FAILURE;
-	else
-		return 0;
+	FORWARD(tcsetattr,(STDIN_FILENO, TCSANOW, &settings));
 }
 
 int reset_single_key_input(const struct termios *old_settings)
