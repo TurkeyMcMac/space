@@ -13,7 +13,7 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->target = NULL;
 	so->health = type->health;
 	so->lifetime = type->lifetime;
-	so->ammo = type->reload;
+	so->ammo = 0;
 	so->reload = 0;
 	so->angle = 0.0;
 	so->dir = (COORD) { 1.0, 0.0 };
