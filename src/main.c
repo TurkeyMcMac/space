@@ -116,13 +116,14 @@ int main(void)
 			lk = '\0';
 			print_errs(stderr);
 		}
-		if CATCH (canvas_print,(&c, stdout))
-			print_errs(stderr);
-		if CATCH (fflush,(stdout))
+		if (CATCH (canvas_print,(&c, stdout))
+		 || CATCH (space_obj_print_stats,(sonode_inner(&sol), stdout))
+		 || CATCH (fflush,(stdout)))
 			print_errs(stderr);
 		if CATCH (tick,(&t))
 			print_errs(stderr);
-		if CATCH (canvas_unprint,(&c, stdout))
+		if (CATCH (space_obj_unprint_stats,(sonode_inner(&sol), stdout))
+		 || CATCH (canvas_unprint,(&c, stdout)))
 			print_errs(stderr);
 	}
 

@@ -1,8 +1,10 @@
 #include "space_obj.h"
 
 #include "canvas.h"
+#include "error.h"
 
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #define so_projectile(so_ptr) ((so_ptr)->type->proj.type)
@@ -464,4 +466,16 @@ void push_to_solist(struct space_obj_node *list, struct space_obj_node *p)
 {
 	p->next = list->next;
 	list->next = p;
+}
+
+int space_obj_print_stats(const struct space_obj *self, FILE *f)
+{
+	FORWARD(fprintf,(f, "HEALTH [%*c%*c\nRELOAD [%*c%*c\n",
+			self->health + 1, '#', self->type->health - self->health + 1, ']',
+			self->reload + 1, '#', self->type->reload_burst - self->reload + 1, ']'));
+}
+
+int space_obj_unprint_stats(const struct space_obj *self, FILE *f)
+{
+	FORWARD(fprintf,(f, "\x1B[2A"));
 }

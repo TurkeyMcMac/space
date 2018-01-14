@@ -3,6 +3,9 @@
 #define _SPACE_OBJ_H
 
 #include "canvas.h"
+#include "error.h"
+
+#include <stdio.h>
 
 typedef struct {
 	float x, y;
@@ -122,5 +125,9 @@ struct space_obj *sonode_inner(struct space_obj_node *self);
 void push_to_solist(struct space_obj_node *list, struct space_obj_node *p);
 
 int simulate_solist(struct space_obj_node *list, char last_key, struct canvas *c);
+
+int space_obj_print_stats(const struct space_obj *self, FILE *f);
+
+int space_obj_unprint_stats(const struct space_obj *self, FILE *f);
 
 #endif
