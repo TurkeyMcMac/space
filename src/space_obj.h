@@ -17,6 +17,7 @@ struct space_obj {
 	int health;
 	int lifetime;
 	short reload, ammo;
+	int has_rotated;
 	float angle;
 	COORD dir;
 	COORD pos;

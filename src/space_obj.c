@@ -18,6 +18,7 @@ void space_obj_init(struct space_obj *so, const struct space_obj_type *type)
 	so->ammo = 0;
 	so->reload = 0;
 	so->angle = 0.0;
+	so->has_rotated = 0;
 	so->dir = (COORD) { 1.0, 0.0 };
 	so->pos = (COORD) { 0.0, 0.0 };
 	so->vel = (COORD) { 0.0, 0.0 };
@@ -34,6 +35,11 @@ static int space_obj_death(struct space_obj *self)
 
 static void space_obj_move(struct space_obj *self, float world_width, float world_height)
 {
+	if (self->has_rotated) {
+		self->has_rotated = 0;
+		self->dir.x = cosf(self->angle);
+		self->dir.y = sinf(self->angle);
+	}
 	if (self->pos.x < self->type->width) {
 		self->pos.x = self->type->width;
 		self->vel.x *= -WALL_BOUNCE_REDUCTION;
@@ -67,15 +73,7 @@ static void space_obj_do_reload(struct space_obj *self)
 static void space_obj_rotate(struct space_obj *self, float angle)
 {
 	self->angle += angle;
-	self->dir.x = FP_NAN;
-}
-
-static void space_obj_calc_dir(struct space_obj *self)
-{
-	if (self->dir.x == FP_NAN) {
-		self->dir.x = cosf(self->angle);
-		self->dir.y = sinf(self->angle);
-	}
+	self->has_rotated = 1;
 }
 
 static void space_obj_rright(struct space_obj *self)
@@ -90,10 +88,8 @@ static void space_obj_rleft(struct space_obj *self)
 
 static void space_obj_thrust(struct space_obj *self)
 {
-	space_obj_calc_dir(self);
-	COORD t = self->dir;
-	self->vel.x += t.x * self->type->acceleration;
-	self->vel.y += t.y * self->type->acceleration;
+	self->vel.x += self->dir.x * self->type->acceleration;
+	self->vel.y += self->dir.y * self->type->acceleration;
 }
 
 static PIXEL *canvas_get_float(struct canvas *c, COORD p)
@@ -122,7 +118,6 @@ static void space_obj_draw(struct space_obj *self, struct canvas *c)
 static void space_obj_draw_player(struct space_obj *self, struct canvas *c)
 {
 	space_obj_draw(self, c);
-	space_obj_calc_dir(self);
 	COORD targ = self->dir;
 	targ.x *= 20.0;
 	targ.y *= 20.0;
@@ -147,7 +142,6 @@ static void space_obj_undraw(struct space_obj *self, struct canvas *c)
 static void space_obj_undraw_player(struct space_obj *self, struct canvas *c)
 {
 	space_obj_undraw(self, c);
-	space_obj_calc_dir(self);
 	COORD targ = self->dir;
 	targ.x *= 20.0;
 	targ.y *= 20.0;
@@ -243,7 +237,6 @@ static struct space_obj_node *space_obj_shoot(struct space_obj *self)
 			++self->target->rc;
 		}
 		p->so.pos = self->pos;
-		space_obj_calc_dir(self);
 		p->so.pos.x += self->dir.x * proj->distance;
 		p->so.pos.y += self->dir.y * proj->distance;
 		p->so.vel = self->vel;
@@ -391,7 +384,6 @@ static struct space_obj_node *space_obj_react(struct space_obj *self, struct spa
 			COORD tvec;
 			tvec.x = self->target->so.pos.x - self->pos.x;
 			tvec.y = self->target->so.pos.y - self->pos.y;
-			space_obj_calc_dir(self);
 			if (self->dir.y * tvec.x + self->type->width < self->dir.x * tvec.y)
 				space_obj_rright(self);
 			else if (self->dir.y * tvec.x - self->type->width > self->dir.x * tvec.y)
