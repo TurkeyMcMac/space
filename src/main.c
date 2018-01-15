@@ -17,6 +17,8 @@ void cancel_game(int _)
 
 int main(void)
 {
+	int errnum = 0;
+
 	struct sigaction canceller;
 	canceller.sa_handler = cancel_game;
 	if CATCH (sigaction,(SIGINT, &canceller, NULL))
@@ -93,7 +95,7 @@ int main(void)
 
 	struct ticker t;
 	if CATCH (ticker_init,(&t, CLOCK_REALTIME, 0, 1000000000 / 40)) {
-		int errnum = errno;
+		errnum = errno;
 		print_errs(stderr);
 		return errnum;
 	}
@@ -104,7 +106,7 @@ int main(void)
 	struct termios old_settings;
 
 	if CATCH (set_single_key_input,(&old_settings)) {
-		int errnum = errno;
+		errnum = errno;
 		print_errs(stderr);
 		return errnum;
 	}
@@ -127,13 +129,18 @@ int main(void)
 			print_errs(stderr);
 	}
 
-	printf("Game over.\n");
+	CATCH (printf,("Game over.\n"));
+	
+	drop_solist(&sol);
+	canvas_drop(&c);
 
 	if CATCH (reset_single_key_input,(&old_settings)) {
-		int errnum = errno;
+		errnum = errno;
 		print_errs(stderr);
-		return errnum;
-	} else
-		return 0;
+	}
+
+	drop_err_buf();
+
+	return errnum;
 }
 

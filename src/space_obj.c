@@ -485,3 +485,12 @@ int space_obj_unprint_stats(const struct space_obj *self, FILE *f)
 {
 	FORWARD(fprintf,(f, "\x1B[2A"));
 }
+
+void drop_solist(struct space_obj_node *list)
+{
+	struct space_obj_node *next;
+	for (list = list->next; list != NULL; list = next) {
+		next = list->next;
+		free(list);
+	}
+}

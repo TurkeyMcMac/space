@@ -130,4 +130,6 @@ int space_obj_print_stats(const struct space_obj *self, FILE *f);
 
 int space_obj_unprint_stats(const struct space_obj *self, FILE *f);
 
+void drop_solist(struct space_obj_node *list);
+
 #endif

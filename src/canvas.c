@@ -76,3 +76,8 @@ int canvas_unprint(const struct canvas *self, FILE *f)
 {
 	FORWARD(fprintf,(f, "\x1B[%luA", (long unsigned)self->height));
 }
+
+void canvas_drop(struct canvas *self)
+{
+	free(self->pixels);
+}
