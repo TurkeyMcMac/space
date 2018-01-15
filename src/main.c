@@ -129,7 +129,8 @@ int main(void)
 			print_errs(stderr);
 	}
 
-	CATCH (printf,("Game over.\n"));
+	if CATCH (printf,("Game over.\n"))
+		print_errs(stderr);
 	
 	drop_solist(&sol);
 	canvas_drop(&c);
