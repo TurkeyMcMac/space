@@ -10,23 +10,27 @@
 
 int set_single_key_input(struct termios *old_settings)
 {
+	int tty;
+	if CATCH_TO(tty, open,("/dev/tty", O_RDONLY))
+		return FAILURE;
 	int old_opts;
-	if (CATCH_TO (old_opts, fcntl,(STDIN_FILENO, F_GETFL)) ||
-	    CATCH (fcntl,(STDIN_FILENO, F_SETFL, O_NONBLOCK | old_opts)))
+	if (CATCH_TO (old_opts, fcntl,(tty, F_GETFL)) ||
+	    CATCH (fcntl,(tty, F_SETFL, O_NONBLOCK | old_opts)))
 		return FAILURE;
 
 	struct termios settings;
-	if CATCH (tcgetattr,(STDIN_FILENO, old_settings))
+	if CATCH (tcgetattr,(tty, old_settings))
 		return FAILURE;
 	settings = *old_settings;
 	settings.c_lflag &= ~(ECHO|ICANON);
-	FORWARD(tcsetattr,(STDIN_FILENO, TCSANOW, &settings));
+	FORWARD(tcsetattr,(tty, TCSANOW, &settings));
 }
 
 int reset_single_key_input(const struct termios *old_settings)
 {
-	if (CATCH (fcntl,(STDIN_FILENO, F_SETFL, ~O_NONBLOCK & fcntl(STDIN_FILENO, F_GETFL))) ||
-	    CATCH (tcsetattr,(STDIN_FILENO, TCSANOW, old_settings)))
+	int tty = open("/dev/tty", O_RDONLY);
+	if (CATCH (fcntl,(tty, F_SETFL, ~O_NONBLOCK & fcntl(tty, F_GETFL))) ||
+	    CATCH (tcsetattr,(tty, TCSANOW, old_settings)))
 		return FAILURE;
 	else
 		return 0;
