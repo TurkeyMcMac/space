@@ -51,3 +51,10 @@ int print_errs(FILE *dest)
 	return printed;
 }
 
+void drop_err_buf(void)
+{
+	if (errors != NULL) {
+		free(errors);
+		errors = NULL;
+	}
+}

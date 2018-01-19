@@ -16,4 +16,6 @@ void push_err(const char *fn, const char *file, int line);
 
 int print_errs(FILE *dest);
 
+void drop_err_buf(void);
+
 #endif

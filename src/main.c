@@ -17,6 +17,8 @@ void cancel_game(int _)
 
 int main(void)
 {
+	int errnum = 0;
+
 	struct sigaction canceller;
 	canceller.sa_handler = cancel_game;
 	if CATCH (sigaction,(SIGINT, &canceller, NULL))
@@ -26,7 +28,7 @@ int main(void)
 	sotype_init(&proj_type);
 		*sotype_name(&proj_type) = "Projectile";
 		*sotype_icon(&proj_type) = '`';
-		*sotype_color(&proj_type) = YELLOW;
+		*sotype_color(&proj_type) = MAGENTA;
 		*sotype_lifetime(&proj_type) = 100;
 		*sotype_team(&proj_type) = 1 << 1;
 		*sotype_collide(&proj_type) = ~(1 << 1);
@@ -34,7 +36,7 @@ int main(void)
 	sotype_init(&player_type);
 		*sotype_name(&player_type) = "Player";
 		*sotype_icon(&player_type) = 'X';
-		*sotype_color(&player_type) = GREEN;
+		*sotype_color(&player_type) = BLUE;
 		*sotype_lifetime(&player_type) = -1;
 		*sotype_health(&player_type) = 10;
 		*sotype_reload(&player_type) = 20;
@@ -51,8 +53,8 @@ int main(void)
 		*sotype_team(&npc_type) = 1 << 1;
 		*sotype_collide(&npc_type) = ~(1 << 1);
 		*sotype_target(&npc_type) = ~(1 << 1);
-		*sotype_icon(&npc_type) = 'X';
-		*sotype_color(&npc_type) = YELLOW;
+		*sotype_icon(&npc_type) = '@';
+		*sotype_color(&npc_type) = RED;
 		*sotype_lifetime(&npc_type) = -1;
 		*sotype_health(&npc_type) = 10;
 		*sotype_friction(&npc_type) = 0.99;
@@ -66,7 +68,7 @@ int main(void)
 	sotype_init(&drone_type);
 		*sotype_name(&drone_type) = "Missile";
 		*sotype_icon(&drone_type) = '*';
-		*sotype_color(&drone_type) = GREEN;
+		*sotype_color(&drone_type) = CYAN;
 		*sotype_lifetime(&drone_type) = 400;
 		*sotype_health(&drone_type) = 1;
 		*sotype_damage(&drone_type) = 2;
@@ -101,10 +103,10 @@ int main(void)
 	char *buf = malloc(800000);
 	setbuffer(stdout, buf, 800000);
 
-	struct termios old_settings;
+	struct terminal_info term_info;
 
-	if CATCH (set_single_key_input,(&old_settings)) {
-		int errnum = errno;
+	if CATCH (set_single_key_input,(&term_info)) {
+		errnum = errno;
 		print_errs(stderr);
 		return errnum;
 	}
@@ -112,27 +114,34 @@ int main(void)
 	char keybuf[5];
 	char lk;
 	while (!cancelled && simulate_solist(&sol, lk, &c)) {
-		if CATCH_TO (lk, last_key,(keybuf, 5)) {
+		if CATCH_TO (lk, last_key,(keybuf, 5, &term_info)) {
 			lk = '\0';
 			print_errs(stderr);
 		}
-		if CATCH (canvas_print,(&c, stdout))
-			print_errs(stderr);
-		if CATCH (fflush,(stdout))
+		if (CATCH (canvas_print,(&c, stdout))
+		 || CATCH (space_obj_print_stats,(sonode_inner(&sol), stdout))
+		 || CATCH (fflush,(stdout)))
 			print_errs(stderr);
 		if CATCH (tick,(&t))
 			print_errs(stderr);
-		if CATCH (canvas_unprint,(&c, stdout))
+		if (CATCH (space_obj_unprint_stats,(sonode_inner(&sol), stdout))
+		 || CATCH (canvas_unprint,(&c, stdout)))
 			print_errs(stderr);
 	}
 
-	printf("Game over.\n");
-
-	if CATCH (reset_single_key_input,(&old_settings)) {
-		int errnum = errno;
+	if CATCH (printf,("Game over.\n"))
 		print_errs(stderr);
-		return errnum;
-	} else
-		return 0;
+	
+	drop_solist(&sol);
+	canvas_drop(&c);
+
+	if CATCH (reset_single_key_input,(&term_info)) {
+		errnum = errno;
+		print_errs(stderr);
+	}
+
+	drop_err_buf();
+
+	return errnum;
 }
 

@@ -1,20 +1,18 @@
-source-files = $(wildcard src/*.h)
-object-files = $(patsubst src/%.h, .objects/%.o, $(source-files))
+object-files = $(patsubst src/%.c, .objects/%.o, $(wildcard src/*.c))
+dependencies = $(patsubst %.o, %.d, $(object-files))
 
 all: a.out
 
-a.out: .objects $(object-files) .objects/main.o
-	$(CC) $(CFLAGS) $(object-files) .objects/main.o -lm
+a.out: .objects $(object-files) 
+	$(CC) $(CFLAGS) $(object-files) -lm
 
 .objects:
 	mkdir .objects
 
-.objects/main.o: src/main.c
-	$(CC) $(CFLAGS) -c src/main.c -o .objects/main.o
+.objects/%.o: src/%.c
+	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
-.objects/%.o: src/%.c src/%.h
-	$(CC) $(CFLAGS) -c $< -o $@
+-include $(dependencies)
 
 clean:
-	rm -rf .objects
-	rm a.out
+	rm -rf .objects a.out

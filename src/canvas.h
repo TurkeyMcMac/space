@@ -40,4 +40,6 @@ int canvas_print(const struct canvas *self, FILE *f);
 
 int canvas_unprint(const struct canvas *self, FILE *f);
 
+void canvas_drop(struct canvas *self);
+
 #endif
