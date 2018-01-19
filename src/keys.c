@@ -8,33 +8,37 @@
 #include <termios.h>
 #include <unistd.h>
 
-int set_single_key_input(struct termios *old_settings)
+int set_single_key_input(struct terminal_info *old_info)
 {
-	int old_opts;
-	if (CATCH_TO (old_opts, fcntl,(STDIN_FILENO, F_GETFL)) ||
-	    CATCH (fcntl,(STDIN_FILENO, F_SETFL, O_NONBLOCK | old_opts)))
+	if (CATCH_TO (old_info->fd, open,("/dev/tty", O_RDONLY))
+	 || CATCH_TO (old_info->flags, fcntl,(old_info->fd, F_GETFL))
+	 || CATCH (fcntl,(old_info->fd, F_SETFL, O_NONBLOCK | old_info->flags)))
 		return FAILURE;
-
-	struct termios settings;
-	if CATCH (tcgetattr,(STDIN_FILENO, old_settings))
+	if CATCH (tcgetattr,(old_info->fd, &old_info->termios))
 		return FAILURE;
-	settings = *old_settings;
-	settings.c_lflag &= ~(ECHO|ICANON);
-	FORWARD(tcsetattr,(STDIN_FILENO, TCSANOW, &settings));
+	tcflag_t old_c_lflag = old_info->termios.c_lflag;
+	old_info->termios.c_lflag &= ~(ECHO|ICANON);
+	if CATCH(tcsetattr,(old_info->fd, TCSANOW, &old_info->termios))
+		return FAILURE;
+	else {
+		old_info->termios.c_lflag = old_c_lflag;
+		return 0;
+	}
 }
 
-int reset_single_key_input(const struct termios *old_settings)
+int reset_single_key_input(const struct terminal_info *old_info)
 {
-	if (CATCH (fcntl,(STDIN_FILENO, F_SETFL, ~O_NONBLOCK & fcntl(STDIN_FILENO, F_GETFL))) ||
-	    CATCH (tcsetattr,(STDIN_FILENO, TCSANOW, old_settings)))
+	if (CATCH (fcntl,(old_info->fd, F_SETFL, old_info->flags))
+	 || CATCH (tcsetattr,(old_info->fd, TCSANOW, &old_info->termios))
+	 || CATCH (close,(old_info->fd)))
 		return FAILURE;
 	else
 		return 0;
 }
 
-char last_key(char *buf, size_t len)
+char last_key(char *buf, size_t len, const struct terminal_info *info)
 {
-	ssize_t nread = read(STDIN_FILENO, buf, len);
+	ssize_t nread = read(info->fd, buf, len);
 	if (nread == FAILURE && errno != EAGAIN && errno != EWOULDBLOCK) {
 		push_err("read", __FILE__, __LINE__ - 2);
 		return FAILURE;

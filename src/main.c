@@ -103,9 +103,9 @@ int main(void)
 	char buf[BUFSIZ];
 	setbuf(stdout, buf);
 
-	struct termios old_settings;
+	struct terminal_info term_info;
 
-	if CATCH (set_single_key_input,(&old_settings)) {
+	if CATCH (set_single_key_input,(&term_info)) {
 		errnum = errno;
 		print_errs(stderr);
 		return errnum;
@@ -114,7 +114,7 @@ int main(void)
 	char keybuf[5];
 	char lk;
 	while (!cancelled && simulate_solist(&sol, lk, &c)) {
-		if CATCH_TO (lk, last_key,(keybuf, 5)) {
+		if CATCH_TO (lk, last_key,(keybuf, 5, &term_info)) {
 			lk = '\0';
 			print_errs(stderr);
 		}
@@ -135,7 +135,7 @@ int main(void)
 	drop_solist(&sol);
 	canvas_drop(&c);
 
-	if CATCH (reset_single_key_input,(&old_settings)) {
+	if CATCH (reset_single_key_input,(&term_info)) {
 		errnum = errno;
 		print_errs(stderr);
 	}

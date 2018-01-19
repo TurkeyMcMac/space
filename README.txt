@@ -11,7 +11,8 @@
 This is a game about, you guessed it, shooting stuff. It is set in space.
 
 CONTROLS:
-Because of the limitations of reading keys from stdin, the following controls may seem strange.
+Because of the limitations of reading keys as a string of bytes, the following controls may seem
+strange.
 
 Movement:
 	W: Move forward
