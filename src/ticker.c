@@ -20,10 +20,8 @@ int ticker_init(struct ticker *t, clockid_t clock_id, long interval)
 int tick(struct ticker *t)
 {
 	t->next.tv_nsec += t->interval;
-	while (t->next.tv_nsec >= 1000000000) {
-		t->next.tv_nsec -= 1000000000;
-		++t->next.tv_sec;
-	}
+	t->next.tv_sec += t->next.tv_nsec / 1e9;
+	t->next.tv_nsec %= (long)1e9;
 
 	if ((errno = clock_nanosleep(t->clock_id, TIMER_ABSTIME, &t->next, NULL)) != 0) {
 		push_err("clock_nanosleep", __FILE__, __LINE__ - 1);
