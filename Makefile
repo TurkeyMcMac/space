@@ -1,18 +1,20 @@
-object-files = $(patsubst src/%.c, .objects/%.o, $(wildcard src/*.c))
+executable = space
+
+object-files = $(patsubst src/%.c, .intermediate/%.o, $(wildcard src/*.c))
 dependencies = $(patsubst %.o, %.d, $(object-files))
 
-all: a.out
+all: $(executable)
 
-a.out: .objects $(object-files) 
-	$(CC) $(CFLAGS) $(object-files) -lm
+$(executable): .intermediate $(object-files) 
+	$(CC) $(CFLAGS) -o $(executable) $(object-files) -lm
 
-.objects:
-	mkdir .objects
+.intermediate:
+	mkdir .intermediate
 
-.objects/%.o: src/%.c
+.intermediate/%.o: src/%.c
 	$(CC) $(CFLAGS) -MMD -c $< -o $@
 
 -include $(dependencies)
 
 clean:
-	rm -rf .objects a.out
+	rm -rf .intermediate $(executable)
