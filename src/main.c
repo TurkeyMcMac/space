@@ -24,7 +24,7 @@ int main(void)
 	if CATCH (sigaction,(SIGINT, &canceller, NULL))
 		print_errs(stderr);
 
-	struct space_obj_type proj_type, player_type, npc_type, drone_type;
+	struct space_obj_type proj_type, player_type, npc_type, factory_type, drone_type;
 	sotype_init(&proj_type);
 		*sotype_name(&proj_type) = "Projectile";
 		*sotype_icon(&proj_type) = '`';
@@ -38,16 +38,33 @@ int main(void)
 		*sotype_icon(&player_type) = 'X';
 		*sotype_color(&player_type) = BLUE;
 		*sotype_lifetime(&player_type) = -1;
-		*sotype_health(&player_type) = 10;
+		*sotype_health(&player_type) = 15;
 		*sotype_reload(&player_type) = 20;
 		*sotype_reload_burst(&player_type) = 50;
 		*sotype_ammo(&player_type) = 2;
 		*sotype_friction(&player_type) = 0.99;
 		*sotype_mass(&player_type) = 20.0;
 		*sotype_acceleration(&player_type) = 0.01;
-		*sotype_rotation(&player_type) = 0.03;
+		*sotype_rotation(&player_type) = 0.02;
 		*sotype_target(&player_type) = ~1;
 		projectile_init(sotype_proj(&player_type), &drone_type, -3.0, -0.4);
+	sotype_init(&factory_type);
+		*sotype_name(&factory_type) = "Factory";
+		*sotype_team(&factory_type) = 1 << 1;
+		*sotype_collide(&factory_type) = ~(1 << 1);
+		*sotype_width(&factory_type) = 1.0;
+		*sotype_target(&factory_type) = ~(1 << 1);
+		*sotype_icon(&factory_type) = '#';
+		*sotype_color(&factory_type) = RED;
+		*sotype_lifetime(&factory_type) = -1;
+		*sotype_health(&factory_type) = 10;
+		*sotype_friction(&factory_type) = 0.99;
+		*sotype_mass(&factory_type) = 200.0;
+		*sotype_rotation(&factory_type) = 0.05;
+		*sotype_reload(&factory_type) = 0;
+		*sotype_reload_burst(&factory_type) = 500;
+		*sotype_ammo(&factory_type) = 1;
+		projectile_init(sotype_proj(&factory_type), &npc_type, 0.7, 0.1);
 	sotype_init(&npc_type);
 		*sotype_name(&npc_type) = "Enemy";
 		*sotype_team(&npc_type) = 1 << 1;
@@ -56,10 +73,10 @@ int main(void)
 		*sotype_icon(&npc_type) = '@';
 		*sotype_color(&npc_type) = RED;
 		*sotype_lifetime(&npc_type) = -1;
-		*sotype_health(&npc_type) = 10;
+		*sotype_health(&npc_type) = 20;
 		*sotype_friction(&npc_type) = 0.99;
 		*sotype_mass(&npc_type) = 20.0;
-		*sotype_acceleration(&npc_type) = 0.007;
+		*sotype_acceleration(&npc_type) = 0.015;
 		*sotype_rotation(&npc_type) = 0.02;
 		*sotype_reload(&npc_type) = 20;
 		*sotype_reload_burst(&npc_type) = 20;
@@ -71,7 +88,7 @@ int main(void)
 		*sotype_color(&drone_type) = CYAN;
 		*sotype_lifetime(&drone_type) = 400;
 		*sotype_health(&drone_type) = 1;
-		*sotype_damage(&drone_type) = 2;
+		*sotype_damage(&drone_type) = 5;
 		*sotype_friction(&drone_type) = 0.995;
 		*sotype_mass(&drone_type) = 3.0;
 		*sotype_acceleration(&drone_type) = 0.020;
@@ -83,11 +100,12 @@ int main(void)
 	space_obj_pos(so)->y = 50.0;
 
 	size_t i;
-	for (i = 0; i < 5; ++i) {
-		struct space_obj_node *npc_node = malloc(sizeof(struct space_obj_node));
-		init_solist(npc_node);
-		space_obj_init(sonode_inner(npc_node), &npc_type);
-		push_to_solist(&sol, npc_node);
+	for (i = 0; i < 2; ++i) {
+		struct space_obj_node *factory_node = malloc(sizeof(struct space_obj_node));
+		init_solist(factory_node);
+		space_obj_init(sonode_inner(factory_node), &factory_type);
+		sonode_inner(factory_node)->pos = (COORD) { 50.0, 50.0 };
+		push_to_solist(&sol, factory_node);
 	}
 
 	struct canvas c;
