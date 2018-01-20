@@ -378,7 +378,6 @@ static struct space_obj_node *space_obj_react(struct space_obj *self, struct spa
 {
 	struct space_obj_node *ret = NULL;
 	if (self->type->acceleration > 0.0 || so_projectile(self) != NULL) {
-		struct space_obj_node *target;
 		if (self->target == NULL || sonode_get(self->target) == NULL) {
 			self->target = NULL;
 			float target_dist;
