@@ -94,7 +94,7 @@ int main(void)
 	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
 
 	struct ticker t;
-	if CATCH (ticker_init,(&t, CLOCK_REALTIME, 1000000000 / 40)) {
+	if CATCH (ticker_init,(&t, CLOCK_REALTIME, 1e9 / 40)) {
 		errnum = errno;
 		print_errs(stderr);
 		return errnum;
