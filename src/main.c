@@ -15,6 +15,12 @@ void cancel_game(int _)
 	cancelled = 1;
 }
 
+void init_sotypes(struct space_obj_type *proj_type,
+		struct space_obj_type *player_type,
+		struct space_obj_type *factory_type,
+		struct space_obj_type *npc_type,
+		struct space_obj_type *drone_type);
+
 int main(void)
 {
 	int errnum = 0;
@@ -25,74 +31,8 @@ int main(void)
 		print_errs(stderr);
 
 	struct space_obj_type proj_type, player_type, npc_type, factory_type, drone_type;
-	sotype_init(&proj_type);
-		*sotype_name(&proj_type) = "Projectile";
-		*sotype_icon(&proj_type) = '`';
-		*sotype_color(&proj_type) = MAGENTA;
-		*sotype_lifetime(&proj_type) = 100;
-		*sotype_team(&proj_type) = 1 << 1;
-		*sotype_collide(&proj_type) = ~(1 << 1);
-		*sotype_width(&proj_type) = 0.1;
-	sotype_init(&player_type);
-		*sotype_name(&player_type) = "Player";
-		*sotype_icon(&player_type) = 'X';
-		*sotype_color(&player_type) = BLUE;
-		*sotype_lifetime(&player_type) = -1;
-		*sotype_health(&player_type) = 15;
-		*sotype_reload(&player_type) = 20;
-		*sotype_reload_burst(&player_type) = 50;
-		*sotype_ammo(&player_type) = 2;
-		*sotype_friction(&player_type) = 0.99;
-		*sotype_mass(&player_type) = 20.0;
-		*sotype_acceleration(&player_type) = 0.01;
-		*sotype_rotation(&player_type) = 0.02;
-		*sotype_target(&player_type) = ~1;
-		projectile_init(sotype_proj(&player_type), &drone_type, -3.0, -0.4);
-	sotype_init(&factory_type);
-		*sotype_name(&factory_type) = "Factory";
-		*sotype_team(&factory_type) = 1 << 1;
-		*sotype_collide(&factory_type) = ~(1 << 1);
-		*sotype_width(&factory_type) = 1.0;
-		*sotype_target(&factory_type) = ~(1 << 1);
-		*sotype_icon(&factory_type) = '#';
-		*sotype_color(&factory_type) = RED;
-		*sotype_lifetime(&factory_type) = -1;
-		*sotype_health(&factory_type) = 10;
-		*sotype_friction(&factory_type) = 0.99;
-		*sotype_mass(&factory_type) = 200.0;
-		*sotype_rotation(&factory_type) = 0.05;
-		*sotype_reload(&factory_type) = 0;
-		*sotype_reload_burst(&factory_type) = 500;
-		*sotype_ammo(&factory_type) = 1;
-		projectile_init(sotype_proj(&factory_type), &npc_type, 0.7, 0.1);
-	sotype_init(&npc_type);
-		*sotype_name(&npc_type) = "Enemy";
-		*sotype_team(&npc_type) = 1 << 1;
-		*sotype_collide(&npc_type) = ~(1 << 1);
-		*sotype_target(&npc_type) = ~(1 << 1);
-		*sotype_icon(&npc_type) = '@';
-		*sotype_color(&npc_type) = RED;
-		*sotype_lifetime(&npc_type) = -1;
-		*sotype_health(&npc_type) = 20;
-		*sotype_friction(&npc_type) = 0.99;
-		*sotype_mass(&npc_type) = 20.0;
-		*sotype_acceleration(&npc_type) = 0.015;
-		*sotype_rotation(&npc_type) = 0.02;
-		*sotype_reload(&npc_type) = 20;
-		*sotype_reload_burst(&npc_type) = 20;
-		*sotype_ammo(&npc_type) = 10;
-		projectile_init(sotype_proj(&npc_type), &proj_type, 3.0, 1.0);
-	sotype_init(&drone_type);
-		*sotype_name(&drone_type) = "Missile";
-		*sotype_icon(&drone_type) = '*';
-		*sotype_color(&drone_type) = CYAN;
-		*sotype_lifetime(&drone_type) = 400;
-		*sotype_health(&drone_type) = 1;
-		*sotype_damage(&drone_type) = 5;
-		*sotype_friction(&drone_type) = 0.995;
-		*sotype_mass(&drone_type) = 3.0;
-		*sotype_acceleration(&drone_type) = 0.020;
-		*sotype_rotation(&drone_type) = 0.07;
+	init_sotypes(&proj_type, &player_type, &factory_type, &npc_type, &drone_type);
+
 	struct space_obj_node sol;
 	init_solist(&sol);
 	struct space_obj *so = sonode_inner(&sol);
@@ -163,3 +103,78 @@ int main(void)
 	return errnum;
 }
 
+void init_sotypes(struct space_obj_type *proj_type,
+		struct space_obj_type *player_type,
+		struct space_obj_type *factory_type,
+		struct space_obj_type *npc_type,
+		struct space_obj_type *drone_type)
+{
+	sotype_init(proj_type);
+		*sotype_name(proj_type) = "Projectile";
+		*sotype_icon(proj_type) = '`';
+		*sotype_color(proj_type) = MAGENTA;
+		*sotype_lifetime(proj_type) = 100;
+		*sotype_team(proj_type) = 1 << 1;
+		*sotype_collide(proj_type) = ~(1 << 1);
+		*sotype_width(proj_type) = 0.1;
+	sotype_init(player_type);
+		*sotype_name(player_type) = "Player";
+		*sotype_icon(player_type) = 'X';
+		*sotype_color(player_type) = BLUE;
+		*sotype_lifetime(player_type) = -1;
+		*sotype_health(player_type) = 15;
+		*sotype_reload(player_type) = 20;
+		*sotype_reload_burst(player_type) = 50;
+		*sotype_ammo(player_type) = 2;
+		*sotype_friction(player_type) = 0.99;
+		*sotype_mass(player_type) = 20.0;
+		*sotype_acceleration(player_type) = 0.01;
+		*sotype_rotation(player_type) = 0.02;
+		*sotype_target(player_type) = ~1;
+		projectile_init(sotype_proj(player_type), drone_type, -3.0, -0.4);
+	sotype_init(factory_type);
+		*sotype_name(factory_type) = "Factory";
+		*sotype_team(factory_type) = 1 << 1;
+		*sotype_collide(factory_type) = ~(1 << 1);
+		*sotype_width(factory_type) = 1.0;
+		*sotype_target(factory_type) = ~(1 << 1);
+		*sotype_icon(factory_type) = '#';
+		*sotype_color(factory_type) = RED;
+		*sotype_lifetime(factory_type) = -1;
+		*sotype_health(factory_type) = 10;
+		*sotype_friction(factory_type) = 0.99;
+		*sotype_mass(factory_type) = 200.0;
+		*sotype_rotation(factory_type) = 0.05;
+		*sotype_reload(factory_type) = 0;
+		*sotype_reload_burst(factory_type) = 500;
+		*sotype_ammo(factory_type) = 1;
+		projectile_init(sotype_proj(factory_type), npc_type, 0.7, 0.1);
+	sotype_init(npc_type);
+		*sotype_name(npc_type) = "Enemy";
+		*sotype_team(npc_type) = 1 << 1;
+		*sotype_collide(npc_type) = ~(1 << 1);
+		*sotype_target(npc_type) = ~(1 << 1);
+		*sotype_icon(npc_type) = '@';
+		*sotype_color(npc_type) = RED;
+		*sotype_lifetime(npc_type) = -1;
+		*sotype_health(npc_type) = 20;
+		*sotype_friction(npc_type) = 0.99;
+		*sotype_mass(npc_type) = 20.0;
+		*sotype_acceleration(npc_type) = 0.015;
+		*sotype_rotation(npc_type) = 0.02;
+		*sotype_reload(npc_type) = 20;
+		*sotype_reload_burst(npc_type) = 20;
+		*sotype_ammo(npc_type) = 10;
+		projectile_init(sotype_proj(npc_type), proj_type, 3.0, 1.0);
+	sotype_init(drone_type);
+		*sotype_name(drone_type) = "Missile";
+		*sotype_icon(drone_type) = '*';
+		*sotype_color(drone_type) = CYAN;
+		*sotype_lifetime(drone_type) = 400;
+		*sotype_health(drone_type) = 1;
+		*sotype_damage(drone_type) = 5;
+		*sotype_friction(drone_type) = 0.995;
+		*sotype_mass(drone_type) = 3.0;
+		*sotype_acceleration(drone_type) = 0.020;
+		*sotype_rotation(drone_type) = 0.07;
+}
