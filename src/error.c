@@ -17,13 +17,13 @@ static __thread size_t cap = 0;
 
 #define INITIAL_CAP 2
 
-#define expand(c) (c *= 2)
-
 void push_err(const char *fn, const char *file, int line)
 {
 	if (cap > 0) {
-		if (len == cap)
-			errors = realloc(errors, expand(cap) * sizeof(struct error));
+		if (len == cap) {
+			cap = cap * 3 / 2;
+			errors = realloc(errors, cap * sizeof(struct error));
+		}
 	} else {
 		errors = malloc((cap = INITIAL_CAP) * sizeof(struct error));
 	}
