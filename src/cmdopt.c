@@ -1,23 +1,29 @@
 #include "cmdopt.h"
 
 #include "error.h"
+#include <limits.h>
+#include <string.h>
+
+#define CONTROL_CHAR_NUM (CHAR_MAX - PRINTABLE_CHAR_NUM + 1)
 
 void cmdopt_parser_init(struct cmdopt_parser *self, size_t n_copt, const struct cmdopt coptlist[n_copt])
 {
 	self->n_copt = n_copt;
 	self->coptlist = coptlist;
+	memset(self->short_map, -1, PRINTABLE_CHAR_NUM);
+	while (n_copt-- > 0)
+		self->short_map[coptlist[n_copt].short_name - CONTROL_CHAR_NUM] = n_copt;
 }
 
 static const struct cmdopt *cmdopt_parser_find_short(const struct cmdopt_parser *self,
 		char short_name)
 {
-	size_t i;
-	const struct cmdopt *copt;
-	for (i = 0, copt = self->coptlist; i < self->n_copt; copt = &self->coptlist[++i]) {
-		if (copt->short_name == short_name)
-			return copt;
-	}
-	return NULL;
+	signed char idx;
+	if (short_name >= CONTROL_CHAR_NUM &&
+	    (idx = self->short_map[short_name - CONTROL_CHAR_NUM]) != -1)
+		return &self->coptlist[(unsigned char)idx];
+	else
+		return NULL;
 }
 
 static int cmp_long_names(size_t len1, const char *str1, const char *str2)

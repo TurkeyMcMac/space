@@ -12,9 +12,13 @@ struct cmdopt {
 	int (*fn)(const struct cmdopt *self, const char *arg, void *env);
 };
 
+#define PRINTABLE_CHAR_NUM 96
+
 struct cmdopt_parser {
 	size_t n_copt;
 	const struct cmdopt *coptlist;
+	signed char short_map[PRINTABLE_CHAR_NUM]; /* No more than 96 options can exist. That should
+	                                              be enough. */
 };
 
 void cmdopt_parser_init(struct cmdopt_parser *self, size_t n_copt, const struct cmdopt coptlist[n_copt]);
