@@ -67,9 +67,14 @@ const struct cmdopt opts[N_COPT] = {
 #define HELP_PADDING 30
 int help_handler(const struct cmdopt *self, const char *arg, void *env)
 {
+	if CATCH (printf,("Usage: space [-(O...|-OPTION)[=ARGUMENT]]...\n"
+			  "Run the game 'space'.\n"
+			  "Options:\n"))
+		print_errs(stderr);
 	size_t i;
 	for (i = 0; i < N_COPT; ++i) {
-		print_cmdopt(&opts[i], HELP_PADDING, stdout);
+		if CATCH (print_cmdopt,(&opts[i], HELP_PADDING, stdout))
+			print_errs(stderr);
 	}
 	return 1;
 }
