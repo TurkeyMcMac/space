@@ -111,29 +111,66 @@ int parse_cmdopts(const struct cmdopt_parser *parser,
 		return 1;
 }
 
+static int print_description(const char * const *desc, int padding, FILE *dest)
+{
+	int written = 0, last_write;
+	if (desc[0] == NULL)
+		return 0;
+	if CATCH_TO (last_write, fprintf,(dest, "%s\n", desc[0]))
+		return FAILURE;
+	else
+		written += last_write;
+	for (++desc; *desc != NULL; ++desc)
+		if CATCH_TO (last_write, fprintf,(dest, "\t%*c%s\n", padding, ' ', *desc))
+			return FAILURE;
+		else
+			written += last_write;
+	return written;
+}
+
 static int print_cmdopt_short_long(const struct cmdopt *copt, int padding, FILE *dest)
 {
-	FORWARD (fprintf,(dest, "\t-%c, --%-*s%s\n",
-		copt->short_name,
-		padding - 6,
-		copt->long_name,
-		copt->description[0]));
+	int written = 0, last_write;
+	if CATCH_TO (last_write, fprintf,(dest, "\t-%c, --%-*s",
+			copt->short_name, padding - 6, copt->long_name))
+		return FAILURE;
+	else
+		written += last_write;
+	if CATCH_TO (last_write, print_description,(copt->description, padding, dest))
+		return FAILURE;
+	else
+		written += last_write;
+	return written;
 }
 
 static int print_cmdopt_short(const struct cmdopt *copt, int padding, FILE *dest)
 {
-	FORWARD (fprintf,(dest, "\t-%-*c%s\n",
-		padding - 1,
-		copt->short_name,
-		copt->description[0]));
+	int written = 0, last_write;
+	if CATCH_TO (last_write, fprintf,(dest, "\t-%-*c",
+			padding - 1, copt->short_name))
+		return FAILURE;
+	else
+		written += last_write;
+	if CATCH_TO (last_write, print_description,(copt->description, padding, dest))
+		return FAILURE;
+	else
+		written += last_write;
+	return written;
 }
 
 static int print_cmdopt_long(const struct cmdopt *copt, int padding, FILE *dest)
 {
-	FORWARD (fprintf,(dest, "\t--%-*s%s\n",
-		padding - 2,
-		copt->long_name,
-		copt->description[0]));
+	int written = 0, last_write;
+	if CATCH_TO (last_write, fprintf,(dest, "\t--%-*s",
+			padding - 2, copt->long_name))
+		return FAILURE;
+	else
+		written += last_write;
+	if CATCH_TO (last_write, print_description,(copt->description, padding, dest))
+		return FAILURE;
+	else
+		written += last_write;
+	return written;
 }
 
 int print_cmdopt(const struct cmdopt *copt, int padding, FILE *dest)

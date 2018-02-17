@@ -44,10 +44,17 @@ int field##_handler(const struct cmdopt *self, const char *arg, void *settings) 
 	} \
 }
 
-DECLARE_CMDOPT(fps, "Set frames per second to the argument provided.");
-DECLARE_CMDOPT(height, "Set world height to the argument provided.");
-DECLARE_CMDOPT(help, "Display help information.");
-DECLARE_CMDOPT(width, "Set world width to the argument provided.");
+DECLARE_CMDOPT(fps,
+	"Set frames per second to the argument provided.",
+	"Default value: 20.");
+DECLARE_CMDOPT(height,
+	"Set world height to the argument provided.",
+	"Default value: 40.");
+DECLARE_CMDOPT(help,
+	"Display help information.");
+DECLARE_CMDOPT(width,
+	"Set world width to the argument provided.",
+	"Default value: 150.");
 
 #define N_COPT 4
 const struct cmdopt opts[N_COPT] = {
