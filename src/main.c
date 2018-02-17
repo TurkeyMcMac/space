@@ -58,10 +58,10 @@ DECLARE_CMDOPT(width,
 
 #define N_COPT 4
 const struct cmdopt opts[N_COPT] = {
-	{ 'f', "frames-per-second", fps_description,    fps_handler     },
-	{ 'H', "height",            height_description, height_handler  },
-	{ 'h', "help",              help_description,   help_handler    },
-	{ 'W', "width",             width_description,  width_handler   },
+	{ 'f', "frames-per-second", fps_description,    fps_handler    },
+	{ 'H', "height",            height_description, height_handler },
+	{ 'h', "help",              help_description,   help_handler   },
+	{ 'W', "width",             width_description,  width_handler  },
 };
 
 #define HELP_PADDING 30
