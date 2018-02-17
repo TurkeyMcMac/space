@@ -1,4 +1,5 @@
 #include "canvas.h"
+#include "cmdopt.h"
 #include "error.h"
 #include "keys.h"
 #include "space_obj.h"
@@ -7,6 +8,11 @@
 #include <errno.h>
 #include <signal.h>
 #include <stdlib.h>
+
+struct game_settings {
+	size_t width, height;
+	long fps;
+};
 
 int cancelled = 0;
 
@@ -21,14 +27,79 @@ void init_sotypes(struct space_obj_type *proj_type,
 		struct space_obj_type *npc_type,
 		struct space_obj_type *drone_type);
 
-int main(void)
+
+#define DECLARE_CMDOPT(name, description...) \
+const char * const name##_description[] = { description, NULL }; \
+int name##_handler(const struct cmdopt *self, const char *arg, void *env);
+
+#define DEFINE_FIELD_SETTER(field, no_arg_error) \
+int field##_handler(const struct cmdopt *self, const char *arg, void *settings) \
+{ \
+	if (arg == NULL) { \
+		fprintf(stderr, no_arg_error "\n"); \
+		return -1; \
+	} else { \
+		((struct game_settings *)settings)->field = atol(arg); \
+		return 0; \
+	} \
+}
+
+DECLARE_CMDOPT(fps, "Set frames per second to the argument provided.");
+DECLARE_CMDOPT(height, "Set world height to the argument provided.");
+DECLARE_CMDOPT(help, "Display help information.");
+DECLARE_CMDOPT(width, "Set world width to the argument provided.");
+
+#define N_COPT 4
+const struct cmdopt opts[N_COPT] = {
+	{ 'f', "frames-per-second", fps_description,    fps_handler     },
+	{ 'H', "height",            height_description, height_handler  },
+	{ 'h', "help",              help_description,   help_handler    },
+	{ 'W', "width",             width_description,  width_handler   },
+};
+
+#define HELP_PADDING 30
+int help_handler(const struct cmdopt *self, const char *arg, void *env)
+{
+	size_t i;
+	for (i = 0; i < N_COPT; ++i) {
+		print_cmdopt(&opts[i], HELP_PADDING, stdout);
+	}
+	return 1;
+}
+
+DEFINE_FIELD_SETTER(fps, "How many frames per second do you want?");
+DEFINE_FIELD_SETTER(width, "How wide should the world be?");
+DEFINE_FIELD_SETTER(height, "How tall should the world be?");
+
+int err_handler(size_t len, const char *bad, void *env)
+{
+	fprintf(stderr, "Invalid option: '%.*s'.\n"
+			"Provide the option '-h' or '--help' for help "
+			"information.\n", (int)len, bad);
+	return -1;
+}
+
+int main(int argc, char *argv[])
 {
 	int errnum = 0;
+	size_t i;
 
 	struct sigaction canceller;
 	canceller.sa_handler = cancel_game;
 	if CATCH (sigaction,(SIGINT, &canceller, NULL))
 		print_errs(stderr);
+
+	struct game_settings settings = {
+		.width = 150,
+		.height = 40,
+		.fps = 20,
+	};
+	struct cmdopt_parser parser;
+	cmdopt_parser_init(&parser, N_COPT, opts);
+	for (i = 1; i < argc; ++i) {
+		if (parse_cmdopts(&parser, argv[i], err_handler, &settings) != 0)
+			return 0;
+	}
 
 	struct space_obj_type proj_type, player_type, npc_type, factory_type, drone_type;
 	init_sotypes(&proj_type, &player_type, &factory_type, &npc_type, &drone_type);
@@ -39,7 +110,6 @@ int main(void)
 	space_obj_init(so, &player_type);
 	space_obj_pos(so)->y = 50.0;
 
-	size_t i;
 	for (i = 0; i < 2; ++i) {
 		struct space_obj_node *factory_node = malloc(sizeof(struct space_obj_node));
 		init_solist(factory_node);
@@ -49,10 +119,10 @@ int main(void)
 	}
 
 	struct canvas c;
-	canvas_init(&c, 200, 50, EMPTY_SPACE_ICON);
+	canvas_init(&c, settings.width, settings.height, EMPTY_SPACE_ICON);
 
 	struct ticker t;
-	if CATCH (ticker_init,(&t, CLOCK_MONOTONIC, 1e9 / 40)) {
+	if CATCH (ticker_init,(&t, CLOCK_MONOTONIC, 1e9 / settings.fps)) {
 		errnum = errno;
 		print_errs(stderr);
 		return errnum;
