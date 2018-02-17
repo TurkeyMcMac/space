@@ -44,7 +44,7 @@ static const struct cmdopt *cmdopt_parser_find_long(const struct cmdopt_parser *
 		size_t len,
 		const char *long_name)
 {
-	size_t lower = 0, upper = self->n_copt; /* NOTE: Coptlist cannot be empty! */
+	size_t lower = 0, upper = self->n_copt;
 	while (lower < upper) {
 		size_t mid = (lower + upper) / 2;
 		const char *other = self->coptlist[mid].long_name;
