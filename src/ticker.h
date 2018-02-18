@@ -6,11 +6,11 @@
 
 struct ticker {
 	struct timespec next;
-	struct timespec interval;
+	long interval;
 	clockid_t clock_id;
 };
 
-int ticker_init(struct ticker *t, clockid_t clock_id, int sec, long nsec);
+int ticker_init(struct ticker *t, clockid_t clock_id, long interval);
 
 int tick(struct ticker *t);
 

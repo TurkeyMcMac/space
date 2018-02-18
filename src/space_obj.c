@@ -271,29 +271,49 @@ static void space_obj_collide(struct space_obj *self, struct space_obj *other)
 	COORD diff;
 	diff.x = other->pos.x - self->pos.x;
 	diff.y = other->pos.y - self->pos.y;
+	/* Objects are touching */
 	if (fabsf(diff.x) < self->type->width * 2.0 && fabsf(diff.y) < self->type->width * 2.0) {
+		/* Other object is on an enemy team */
 		if (self->type->collide & other->type->team) {
 			self->health -= other->type->damage;
 			other->health -= self->type->damage;
 		}
-	
 
+		/* Collision is on the x-axis */
 		if (fabsf(diff.x) > fabsf(diff.y)) {
-			if (diff.x > 0.0)
-				self->pos.x = other->pos.x - self->type->width * 2.0;
-			else
-				self->pos.x = other->pos.x + self->type->width * 2.0;
 			self->vel.x = (self->vel.x * self->type->mass + other->vel.x * other->type->mass) /
 				(self->type->mass + other->type->mass);
 			other->vel.x = self->vel.x;
+			/* Collision is on self's right side */
+			if (diff.x > 0.0) {
+				self->pos.x = other->pos.x - self->type->width * 2.0;
+				/* Self is moving away from other */
+				if (self->vel.x < 0.0)
+					self->pos.x += self->vel.x; /* Ensures that other will not
+								       collide with self on its next
+								       update */
+			} else {
+				self->pos.x = other->pos.x + self->type->width * 2.0;
+				/* Self is moving away from other */
+				if (self->vel.x > 0.0)
+					self->pos.x += self->vel.x;
+			}
 		} else {
-			if (diff.y > 0.0)
-				self->pos.y = other->pos.y - self->type->width * 2.0;
-			else
-				self->pos.y = other->pos.y + self->type->width * 2.0;
 			self->vel.y = (self->vel.y * self->type->mass + other->vel.y * other->type->mass) /
 				(self->type->mass + other->type->mass);
 			other->vel.y = self->vel.y;
+			/* Collision is on self's bottom side */
+			if (diff.y > 0.0) {
+				self->pos.y = other->pos.y - self->type->width * 2.0;
+				/* Self is moving away from other */
+				if (self->vel.y < 0.0)
+					self->pos.y += self->vel.y;
+			} else {
+				self->pos.y = other->pos.y + self->type->width * 2.0;
+				/* Self is moving away from other */
+				if (self->vel.y > 0.0)
+					self->pos.y += self->vel.y;
+			}
 		}
 	}
 }
@@ -358,7 +378,6 @@ static struct space_obj_node *space_obj_react(struct space_obj *self, struct spa
 {
 	struct space_obj_node *ret = NULL;
 	if (self->type->acceleration > 0.0 || so_projectile(self) != NULL) {
-		struct space_obj_node *target;
 		if (self->target == NULL || sonode_get(self->target) == NULL) {
 			self->target = NULL;
 			float target_dist;

@@ -5,10 +5,9 @@
 #include <errno.h>
 #include <time.h>
 
-int ticker_init(struct ticker *t, clockid_t clock_id, int sec, long nsec)
+int ticker_init(struct ticker *t, clockid_t clock_id, long interval)
 {
-	t->interval.tv_sec = sec;
-	t->interval.tv_nsec = nsec;
+	t->interval = interval;
 	t->clock_id = clock_id;
 /*
 	if ((errno = clock_gettime(clock_id, &t->next)) != 0) {
@@ -22,15 +21,12 @@ int ticker_init(struct ticker *t, clockid_t clock_id, int sec, long nsec)
 
 int tick(struct ticker *t)
 {
-/*	t->next.tv_sec += t->interval.tv_sec;
-	t->next.tv_nsec += t->interval.tv_nsec;
-	if (t->next.tv_nsec >= 1000000000) {
-		t->next.tv_nsec -= 1000000000;
-		++t->next.tv_sec;
-	}
-*/
-	if ((errno = nanosleep(&t->next, NULL)) != 0) {
-		push_err("nanosleep", __FILE__, __LINE__ - 1);
+	t->next.tv_nsec += t->interval;
+	t->next.tv_sec += t->next.tv_nsec / 1e9;
+	t->next.tv_nsec %= (long)1e9;
+
+	if ((errno = clock_nanosleep(t->clock_id, TIMER_ABSTIME, &t->next, NULL)) != 0) {
+		push_err("clock_nanosleep", __FILE__, __LINE__ - 1);
 		return FAILURE;
 	} else
 		return 0;
