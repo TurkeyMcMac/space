@@ -5,9 +5,7 @@
 #include <time.h>
 
 struct ticker {
-	struct timespec next;
-	long interval;
-	clockid_t clock_id;
+	struct timespec interval;
 };
 
 int ticker_init(struct ticker *t, clockid_t clock_id, long interval);
